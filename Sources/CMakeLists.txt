@@ -7,6 +7,7 @@ set(INCLUDES
 )
 set(SOURCES
     Asio.cpp
+    Service.cpp
 )
 
 find_package(Threads REQUIRED)

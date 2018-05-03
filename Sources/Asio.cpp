@@ -64,22 +64,19 @@ private:
     boost::asio::ip::tcp::acceptor mAcceptor;
 };
 
-template <typename ...TArgs>
-std::unique_ptr<IAsioService> MakeAsioService(TArgs&&...aArgs)
+std::unique_ptr<IAsioService> MakeAsioService()
 {
-    return std::make_unique<AsioService>(std::forward<TArgs>(aArgs)...);
+    return std::make_unique<AsioService>();
 }
 
-template <typename ...TArgs>
-std::unique_ptr<IAsioSocket> MakeAsioSocket(TArgs&&...aArgs)
+std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService)
 {
-    return std::make_unique<AsioSocket>(std::forward<TArgs>(aArgs)...);
+    return std::make_unique<AsioSocket>(dynamic_cast<AsioService*>(aAsioService));
 }
 
-template <typename ...TArgs>
-std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(TArgs&&...aArgs)
+std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort)
 {
-    return std::make_unique<AsioAcceptor>(std::forward<TArgs>(aArgs)...);
+    return std::make_unique<AsioAcceptor>(dynamic_cast<AsioService*>(aAsioService), aPort);
 }
 
 }

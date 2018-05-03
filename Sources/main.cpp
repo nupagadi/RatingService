@@ -26,11 +26,17 @@ private:
 };
 
 // TODO: Arguments.
-int main()
+int main(int argc, char** argv)
 {
-//    SimpleManager manager(RatingService::MakeSharedService(21345));
+    if (argc != 3)
+    {
+        std::cerr << "Should supply a port and threads count" << std::endl;
+        return EXIT_FAILURE;
+    }
 
-//    manager.Run();
+    SimpleManager manager(RatingService::MakeSharedService(std::atoi(argv[1])), std::atoi(argv[2]));
+
+    manager.Run();
 
     return 0;
 }

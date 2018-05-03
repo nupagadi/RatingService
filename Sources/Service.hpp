@@ -14,15 +14,19 @@ struct Service : std::enable_shared_from_this<Service>, IService
         : mService(std::move(aService))
         , mAcceptor(std::move(aAcceptor))
         , mSocket(std::move(aSocket))
-        , mAcceptCallback(*this, &IService::OnAccept)
-        , mReadCallback(*this, &IService::OnReceive)
+        , mAcceptCallback(&IService::OnAccept)
+        , mReadCallback(&IService::OnReceive)
         , mPort(aPort)
     {
     }
 
     void Run()
     {
+        mAcceptCallback.SetCallee(shared_from_this());
+        mReadCallback.SetCallee(shared_from_this());
+
         Accept();
+        mService->Run();
     }
 
     void OnAccept(const boost::system::error_code& aErrorCode) override
@@ -36,12 +40,23 @@ struct Service : std::enable_shared_from_this<Service>, IService
             // TODO: Use logger.
             std::cerr << "Service::OnAccept: " << aErrorCode << std::endl;
         }
-
     }
 
     void OnReceive(const boost::system::error_code &aErrorCode, const size_t& aLength) override
     {
-        // TODO: Post a task.
+        if (!aErrorCode)
+        {
+            // TODO: Post a task.
+
+            std::cout.write(mBuffer.get(), aLength);
+
+            Receive();
+        }
+        else
+        {
+            // TODO: Use logger.
+            std::cerr << "Service::OnReceive: " << aErrorCode << std::endl;
+        }
     }
 
 private:

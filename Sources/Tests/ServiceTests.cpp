@@ -36,7 +36,7 @@ TEST(ServiceTests, ShouldAcceptOnRun)
 
     EXPECT_CALL(
         mocked.AsioAcceptor,
-        Accept(&mocked.AsioSocket, IAsioAcceptor::TAcceptCallback{*mocked.Service.get(), &IService::OnAccept}));
+        Accept(&mocked.AsioSocket, IAsioAcceptor::TAcceptCallback{mocked.Service, &IService::OnAccept}));
 
     mocked.Service->Run();
 }
@@ -48,7 +48,7 @@ TEST(ServiceTests, ShouldReceiveAccessSucceeded)
     // TODO: Create buffer factory.
     EXPECT_CALL(
         mocked.AsioSocket,
-        Receive(::testing::StrEq(""), 1024, IAsioSocket::TReadCallback{*mocked.Service.get(), &IService::OnReceive}));
+        Receive(::testing::StrEq(""), 1024, IAsioSocket::TReadCallback{mocked.Service, &IService::OnReceive}));
 
     auto success = boost::system::error_code{};
     mocked.Service->OnAccept(success);

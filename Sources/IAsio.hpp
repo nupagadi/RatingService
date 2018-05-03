@@ -14,25 +14,38 @@ struct Callback<TCallee, R (TArgs...)>
 {
     using TCall = R(TCallee::*)(TArgs...);
 
-    Callback(TCallee& aCallee, TCall aCall)
+    Callback(const std::shared_ptr<TCallee>& aCallee, TCall aCall)
         : mCallee(aCallee)
         , mCall(aCall)
     {
     }
 
+    Callback(TCall aCall)
+        : mCall(aCall)
+    {
+    }
+
+    void SetCallee(std::shared_ptr<TCallee> aCallee)
+    {
+        if (mCallee != aCallee)
+        {
+            mCallee = std::move(aCallee);
+        }
+    }
+
     R operator()(TArgs&&... aArgs)
     {
-        return (mCallee.*mCall)(std::forward<TArgs>(aArgs)...);
+        return (*mCallee.*mCall)(std::forward<TArgs>(aArgs)...);
     }
 
     bool operator ==(const Callback& aRighthand) const
     {
-        return &mCallee == &aRighthand.mCallee && mCall == aRighthand.mCall;
+        return mCallee == aRighthand.mCallee && mCall == aRighthand.mCall;
     }
 
 private:
 
-    TCallee& mCallee;
+    std::shared_ptr<TCallee> mCallee;
     TCall mCall;
 };
 
@@ -67,11 +80,10 @@ struct IAsioAcceptor
     virtual void Accept(IAsioSocket* aSocket, TAcceptCallback aCallback) = 0;
 };
 
-template <typename ...TArgs>
-std::unique_ptr<IAsioService> MakeAsioService(TArgs&&...);
-template <typename ...TArgs>
-std::unique_ptr<IAsioSocket> MakeAsioSocket(TArgs&&...);
-template <typename ...TArgs>
-std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(TArgs&&...);
+std::unique_ptr<IAsioService> MakeAsioService();
+
+std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService);
+
+std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort);
 
 }
