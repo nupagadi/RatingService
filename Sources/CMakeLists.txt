@@ -4,6 +4,7 @@ set(INCLUDES
     IService.hpp
     Service.hpp
     IAsio.hpp
+    IManager.hpp
 )
 set(SOURCES
     Asio.cpp

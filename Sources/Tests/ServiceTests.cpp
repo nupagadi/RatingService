@@ -1,5 +1,3 @@
-//#include <boost/system/error_code.hpp>
-
 #include "Mocks.hpp"
 #include "../Service.hpp"
 
@@ -15,6 +13,7 @@ struct MockedService
     AsioServiceMock& AsioService;
     AsioSocketMock& AsioSocket;
     AsioAcceptorMock& AsioAcceptor;
+    std::unique_ptr<ManagerMock> Manager;
 };
 
 auto MakeMockedService()
@@ -22,8 +21,9 @@ auto MakeMockedService()
     auto asioService = std::make_unique<StrictMock<AsioServiceMock>>();
     auto asioSocket = std::make_unique<StrictMock<AsioSocketMock>>();
     auto asioAcceptor = std::make_unique<StrictMock<AsioAcceptorMock>>();
+    auto manager = std::make_unique<StrictMock<ManagerMock>>();
 
-    auto mocked = MockedService{nullptr, *asioService, *asioSocket, *asioAcceptor};
+    auto mocked = MockedService{nullptr, *asioService, *asioSocket, *asioAcceptor, std::move(manager)};
     mocked.Service =
         std::make_shared<Service>(std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), 21345);
     return std::move(mocked);

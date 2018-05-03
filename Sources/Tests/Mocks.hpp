@@ -4,6 +4,7 @@
 #include <gmock/gmock.h>
 
 #include "../IAsio.hpp"
+#include "../IManager.hpp"
 
 namespace RatingService
 {
@@ -27,6 +28,11 @@ struct AsioAcceptorMock : IAsioAcceptor
 struct AsioSocketMock : IAsioSocket
 {
      MOCK_METHOD3(Receive, void(char* aBuffer, size_t aMaxLength, TReadCallback aCallback));
+};
+
+struct ManagerMock : IManager
+{
+    MOCK_METHOD1(ProcessMessageFromNet, void(const std::unique_ptr<char[]>& aMessage));
 };
 
 }

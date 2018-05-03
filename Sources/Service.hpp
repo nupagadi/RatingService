@@ -25,9 +25,16 @@ struct Service : std::enable_shared_from_this<Service>, IService
         mAcceptCallback.SetCallee(shared_from_this());
         mReadCallback.SetCallee(shared_from_this());
 
+        // TODO: Set signals.
+        // TODO: Set timers.
+
         Accept();
+
         mService->Run();
     }
+
+    // TODO: Implement?
+    void Stop();
 
     void OnAccept(const boost::system::error_code& aErrorCode) override
     {
@@ -48,7 +55,9 @@ struct Service : std::enable_shared_from_this<Service>, IService
         {
             // TODO: Post a task.
 
-            std::cout.write(mBuffer.get(), aLength);
+            std::cout << "Length: " << aLength;
+            std::cout.write(mBuffer.get(), aLength) << std::flush;
+//            std::cout << mBuffer.get() << std::flush;
 
             Receive();
         }
@@ -72,12 +81,13 @@ private:
         mSocket->Receive(mBuffer.get(), MaxPacketSize, mReadCallback);
     }
 
+    // TODO: Implement?
     void Send();
 
 private:
 
     // TODO: May be decrease it.
-    static const constexpr size_t MaxPacketSize = 1024;
+    static const constexpr size_t MaxPacketSize = 16;
 
     std::unique_ptr<IAsioService> mService;
     std::unique_ptr<IAsioAcceptor> mAcceptor;
@@ -88,7 +98,7 @@ private:
 
     std::unique_ptr<char[]> mBuffer;
 
-    // TODO: Remove?
+    // TODO: Remove? Need for Acceptor recreation?
     short mPort {};
 };
 

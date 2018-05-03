@@ -25,7 +25,7 @@ struct Callback<TCallee, R (TArgs...)>
     {
     }
 
-    void SetCallee(std::shared_ptr<TCallee> aCallee)
+    void SetCallee(std::shared_ptr<TCallee>&& aCallee)
     {
         if (mCallee != aCallee)
         {
