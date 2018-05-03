@@ -1,0 +1,41 @@
+#pragma once
+
+#include <memory>
+#include <boost/system/error_code.hpp>
+
+namespace RatingService
+{
+
+struct IAsioService
+{
+    virtual ~IAsioService() = default;
+
+    // TODO: Use Poll instead.
+    virtual void Run() = 0;
+};
+
+struct IAsioSocket
+{
+    virtual ~IAsioSocket() = default;
+
+    virtual void Receive(
+        char* aBuffer,
+        size_t aMaxLength,
+        std::function<void(boost::system::error_code, size_t)> aCallback) = 0;
+};
+
+struct IAsioAcceptor
+{
+    virtual ~IAsioAcceptor() = default;
+
+    virtual void Accept(IAsioSocket* aSocket, std::function<void(boost::system::error_code)>) = 0;
+};
+
+template <typename ...TArgs>
+std::unique_ptr<IAsioService> MakeAsioService(TArgs&&...);
+template <typename ...TArgs>
+std::unique_ptr<IAsioSocket> MakeAsioSocket(TArgs&&...);
+template <typename ...TArgs>
+std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(TArgs&&...);
+
+}
