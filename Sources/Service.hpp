@@ -27,12 +27,12 @@ private:
 
     void Accept()
     {
-        mAcceptor->Accept(mSocket.get(), std::bind(&Service::Receive, this, std::placeholders::_1));
+        mAcceptor->Accept(mSocket.get(), IAsioAcceptor::TAcceptCallback(*this, &IService::Receive));
     }
 
 public:
 
-    void Receive(boost::system::error_code aErrorCode)
+    void Receive(const boost::system::error_code& /*aErrorCode*/)
     {
 
     }

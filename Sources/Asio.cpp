@@ -51,12 +51,12 @@ struct AsioAcceptor : IAsioAcceptor
     {
     }
 
-    void Accept(IAsioSocket* aSocket, std::function<void(boost::system::error_code)> aCallback) override
+    void Accept(IAsioSocket* aAsioSocket, TAcceptCallback aCallback) override
     {
-        assert(aSocket);
-        auto concreteSocket = dynamic_cast<AsioSocket*>(aSocket);
+        assert(aAsioSocket);
+        auto concreteSocket = dynamic_cast<AsioSocket*>(aAsioSocket);
         assert(concreteSocket);
-        mAcceptor.async_accept(concreteSocket->mSocket, std::move(aCallback));
+        mAcceptor.async_accept(concreteSocket->mSocket, aCallback);
     }
 
 private:

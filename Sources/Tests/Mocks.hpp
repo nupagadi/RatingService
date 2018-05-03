@@ -21,7 +21,7 @@ struct AsioServiceMock : IAsioService
 
 struct AsioAcceptorMock : IAsioAcceptor
 {
-    MOCK_METHOD2(Accept, void(IAsioSocket* aSocket, std::function<void(boost::system::error_code)>));
+    MOCK_METHOD2(Accept, void(IAsioSocket* aSocket, TAcceptCallback aCallback));
 };
 
 struct AsioSocketMock : IAsioSocket

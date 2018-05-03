@@ -6,6 +6,38 @@
 namespace RatingService
 {
 
+template <typename TCallee, typename TCall>
+struct Callback;
+
+template <typename TCallee, typename R, typename ... TArgs>
+struct Callback<TCallee, R (TArgs...)>
+{
+    using TCall = R(TCallee::*)(TArgs...);
+
+    Callback(TCallee& aCallee, TCall aCall)
+        : mCallee(aCallee)
+        , mCall(aCall)
+    {
+    }
+
+    R operator()(TArgs&&... aArgs)
+    {
+        return (mCallee.*mCall)(std::forward<TArgs>(aArgs)...);
+    }
+
+    bool operator ==(const Callback& aRighthand) const
+    {
+        return &mCallee == &aRighthand.mCallee && mCall == aRighthand.mCall;
+    }
+
+private:
+
+    TCallee& mCallee;
+    TCall mCall;
+};
+
+struct IService;
+
 struct IAsioService
 {
     virtual ~IAsioService() = default;
@@ -24,11 +56,15 @@ struct IAsioSocket
         std::function<void(boost::system::error_code, size_t)> aCallback) = 0;
 };
 
+// TODO: Template for IService.
 struct IAsioAcceptor
 {
+    // Should comply Boost.Asio Accept handler requirements.
+    using TAcceptCallback = Callback<IService, void(const boost::system::error_code&)>;
+
     virtual ~IAsioAcceptor() = default;
 
-    virtual void Accept(IAsioSocket* aSocket, std::function<void(boost::system::error_code)>) = 0;
+    virtual void Accept(IAsioSocket* aSocket, TAcceptCallback aCallback) = 0;
 };
 
 template <typename ...TArgs>
