@@ -1,3 +1,4 @@
+#include "IManager.hpp"
 #include "IService.hpp"
 #include "IAsio.hpp"
 
@@ -10,10 +11,12 @@ struct Service : std::enable_shared_from_this<Service>, IService
         std::unique_ptr<IAsioService>&& aService,
         std::unique_ptr<IAsioAcceptor>&& aAcceptor,
         std::unique_ptr<IAsioSocket>&& aSocket,
+        IManager* aManager,
         short aPort)
         : mService(std::move(aService))
         , mAcceptor(std::move(aAcceptor))
         , mSocket(std::move(aSocket))
+        , mManager(aManager)
         , mAcceptCallback(&IService::OnAccept)
         , mReadCallback(&IService::OnReceive)
         , mPort(aPort)
@@ -56,7 +59,8 @@ struct Service : std::enable_shared_from_this<Service>, IService
     {
         if (!aErrorCode)
         {
-            // TODO: Post a task.
+            // TODO: Check if the message is complete (\r\n --> \0).
+            mManager->ProcessMessageFromNet(mBuffer);
 
             std::cout << "Length: " << aLength;
             std::cout.write(mBuffer.get(), aLength) << std::flush;
@@ -95,6 +99,7 @@ private:
     std::unique_ptr<IAsioService> mService;
     std::unique_ptr<IAsioAcceptor> mAcceptor;
     std::unique_ptr<IAsioSocket> mSocket;
+    IManager* mManager;
 
     IAsioAcceptor::TAcceptCallback mAcceptCallback;
     IAsioSocket::TReadCallback mReadCallback;

@@ -34,7 +34,7 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    SimpleManager manager(RatingService::MakeSharedService(std::atoi(argv[1])), std::atoi(argv[2]));
+    SimpleManager manager(RatingService::MakeSharedService(nullptr, std::atoi(argv[1])), std::atoi(argv[2]));
 
     manager.Run();
 

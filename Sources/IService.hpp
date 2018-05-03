@@ -6,6 +6,8 @@
 namespace RatingService
 {
 
+struct IManager;
+
 struct IService
 {
     virtual ~IService() = default;
@@ -21,6 +23,6 @@ struct IService
     virtual void OnReceive(const boost::system::error_code& aErrorCode, const size_t& aLength) = 0;
 };
 
-std::shared_ptr<IService> MakeSharedService(short aPort);
+std::shared_ptr<IService> MakeSharedService(IManager *aManager, short aPort);
 
 }

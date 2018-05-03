@@ -18,19 +18,6 @@ struct MockedService
     std::unique_ptr<ManagerMock> Manager;
 };
 
-auto MakeMockedService()
-{
-    auto asioService = std::make_unique<StrictMock<AsioServiceMock>>();
-    auto asioSocket = std::make_unique<StrictMock<AsioSocketMock>>();
-    auto asioAcceptor = std::make_unique<StrictMock<AsioAcceptorMock>>();
-    auto manager = std::make_unique<StrictMock<ManagerMock>>();
-
-    auto mocked = MockedService{nullptr, *asioService, *asioSocket, *asioAcceptor, std::move(manager)};
-    mocked.Service =
-        std::make_shared<Service>(std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), 21345);
-    return std::move(mocked);
-}
-
 struct ServiceTests : ::testing::Test
 {
     std::shared_ptr<RatingService::Service> Service;
@@ -51,7 +38,7 @@ struct ServiceTests : ::testing::Test
         Manager = std::make_unique<StrictMock<ManagerMock>>();
 
         Service = std::make_shared<RatingService::Service>(
-            std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), 21345);
+            std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get(), 21345);
     }
 
     void TearDown() override
@@ -94,18 +81,32 @@ TEST_F(ServiceTests, ShouldReceiveOnAccessSucceeded)
 
 TEST_F(ServiceTests, ShouldPassNetworkMessageToManager)
 {
-    EXPECT_CALL(*AsioSocket, Receive(_, _, _));
-    Service->OnAccept({});
-
     size_t length = 10;
     auto message = std::make_unique<char[]>(length);
     std::strncpy(message.get(), "12345678\r\n", length);
 
-    EXPECT_CALL(*Manager, ProcessMessageFromNet(Ref(message)));
+    EXPECT_CALL(*AsioSocket, Receive(_, _, _));
+    Service->OnAccept({});
+
+    // TODO: Cannot check passed string content. Need buffer factory.
+    EXPECT_CALL(*Manager, ProcessMessageFromNet(_));
     EXPECT_CALL(*AsioSocket, Receive(_, _, _));
 
     auto success = boost::system::error_code{};
     Service->OnReceive(success, length);
+}
+
+// TODO: Need buffer factory.
+// TODO: Assume message will not be too long?
+TEST_F(ServiceTests, ShouldJoinIfSeveralPackets)
+{
+
+}
+
+// TODO: Need buffer factory.
+TEST_F(ServiceTests, ShouldChangeMessageEndWithNull)
+{
+
 }
 
 }
