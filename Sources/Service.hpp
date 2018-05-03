@@ -32,9 +32,12 @@ private:
 
 public:
 
-    void Receive(const boost::system::error_code& /*aErrorCode*/)
+    void Receive(const boost::system::error_code& aErrorCode)
     {
+        if (!aErrorCode)
+        {
 
+        }
     }
 
     void Send();

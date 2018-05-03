@@ -26,8 +26,7 @@ struct AsioAcceptorMock : IAsioAcceptor
 
 struct AsioSocketMock : IAsioSocket
 {
-     MOCK_METHOD3(Receive,
-        void(char* aBuffer, size_t aMaxLength, std::function<void(boost::system::error_code, size_t)> aCallback));
+     MOCK_METHOD3(Receive, void(char* aBuffer, size_t aMaxLength, TReadCallback aCallback));
 };
 
 }

@@ -32,9 +32,9 @@ struct AsioSocket : IAsioSocket
     void Receive(
         char* aBuffer,
         size_t aMaxLength,
-        std::function<void(boost::system::error_code, size_t)> aCallback) override
+        TReadCallback aCallback) override
     {
-        mSocket.async_read_some(boost::asio::buffer(aBuffer, aMaxLength), std::move(aCallback));
+        mSocket.async_read_some(boost::asio::buffer(aBuffer, aMaxLength), aCallback);
     }
 
 private:
