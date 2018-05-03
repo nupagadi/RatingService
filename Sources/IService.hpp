@@ -13,7 +13,9 @@ struct IService
     // TODO: Use Poll instead.
     virtual void Run() = 0;
 
-    virtual void Receive(const boost::system::error_code& aErrorCode) = 0;
+    virtual void OnAccept(const boost::system::error_code& aErrorCode) = 0;
+
+    virtual void OnReceive(const boost::system::error_code& aErrorCode, const size_t& aLength) = 0;
 };
 
 std::shared_ptr<IService> MakeSharedService(short aPort);
