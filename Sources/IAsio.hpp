@@ -57,6 +57,9 @@ struct IAsioService
 
     // TODO: Use Poll instead.
     virtual void Run() = 0;
+
+    // TODO: Ok?
+    virtual void Stop(bool aForce) = 0;
 };
 
 struct IAsioSocket

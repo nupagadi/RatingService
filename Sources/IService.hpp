@@ -13,6 +13,9 @@ struct IService
     // TODO: Use Poll instead.
     virtual void Run() = 0;
 
+    // TODO: Ok?
+    virtual void Stop(bool aForce) = 0;
+
     virtual void OnAccept(const boost::system::error_code& aErrorCode) = 0;
 
     virtual void OnReceive(const boost::system::error_code& aErrorCode, const size_t& aLength) = 0;

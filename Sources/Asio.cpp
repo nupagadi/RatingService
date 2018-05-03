@@ -13,6 +13,16 @@ struct AsioService : IAsioService
     void Run() override
     {
         mIoService.run();
+        assert(mIoService.stopped());
+    }
+
+    void Stop(bool aForce) override
+    {
+        if (aForce)
+        {
+            mIoService.stop();
+        }
+        // TODO: else?
     }
 
 private:

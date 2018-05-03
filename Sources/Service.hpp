@@ -34,7 +34,10 @@ struct Service : std::enable_shared_from_this<Service>, IService
     }
 
     // TODO: Implement?
-    void Stop();
+    void Stop(bool aForce)
+    {
+        mService->Stop(aForce);
+    }
 
     void OnAccept(const boost::system::error_code& aErrorCode) override
     {
@@ -87,7 +90,7 @@ private:
 private:
 
     // TODO: May be decrease it.
-    static const constexpr size_t MaxPacketSize = 16;
+    static const constexpr size_t MaxPacketSize = 1024;
 
     std::unique_ptr<IAsioService> mService;
     std::unique_ptr<IAsioAcceptor> mAcceptor;

@@ -14,10 +14,13 @@ namespace Tests
 
 using ::testing::_;
 using ::testing::StrictMock;
+using ::testing::Ref;
 
 struct AsioServiceMock : IAsioService
 {
     MOCK_METHOD0(Run, void());
+
+    MOCK_METHOD1(Stop, void(bool aForce));
 };
 
 struct AsioAcceptorMock : IAsioAcceptor

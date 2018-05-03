@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "Mocks.hpp"
 #include "../Service.hpp"
 
@@ -29,30 +31,100 @@ auto MakeMockedService()
     return std::move(mocked);
 }
 
-// TODO: Use Poll instead.
-TEST(ServiceTests, ShouldAcceptOnRun)
+struct ServiceTests : ::testing::Test
 {
-    auto mocked = MakeMockedService();
+    std::shared_ptr<RatingService::Service> Service;
+    AsioServiceMock* AsioService;
+    AsioSocketMock* AsioSocket;
+    AsioAcceptorMock* AsioAcceptor;
+    std::unique_ptr<ManagerMock> Manager;
 
-    EXPECT_CALL(
-        mocked.AsioAcceptor,
-        Accept(&mocked.AsioSocket, IAsioAcceptor::TAcceptCallback{mocked.Service, &IService::OnAccept}));
+    void SetUp() override
+    {
+        auto asioService = std::make_unique<StrictMock<AsioServiceMock>>();
+        auto asioSocket = std::make_unique<StrictMock<AsioSocketMock>>();
+        auto asioAcceptor = std::make_unique<StrictMock<AsioAcceptorMock>>();
 
-    mocked.Service->Run();
+        AsioService = asioService.get();
+        AsioSocket = asioSocket.get();
+        AsioAcceptor = asioAcceptor.get();
+        Manager = std::make_unique<StrictMock<ManagerMock>>();
+
+        Service = std::make_shared<RatingService::Service>(
+            std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), 21345);
+    }
+
+    void TearDown() override
+    {
+        // Seems GMock can't work properly with shared_from_this() objects.
+        ::testing::Mock::AllowLeak(AsioAcceptor);
+        ::testing::Mock::AllowLeak(AsioService);
+        ::testing::Mock::AllowLeak(AsioSocket);
+    }
+};
+
+// TODO: Use Poll instead.
+TEST_F(ServiceTests, ShouldAcceptOnRun)
+{
+    IAsioAcceptor::TAcceptCallback callback{Service, &IService::OnAccept};
+
+    EXPECT_CALL(*AsioAcceptor, Accept(AsioSocket, callback));
+
+    EXPECT_CALL(*AsioService, Run());
+
+    Service->Run();
 }
 
-TEST(ServiceTests, ShouldReceiveAccessSucceeded)
+TEST_F(ServiceTests, ShouldReceiveOnAccessSucceeded)
 {
-    auto mocked = MakeMockedService();
+    EXPECT_CALL(*AsioAcceptor, Accept(_, _));
+
+    EXPECT_CALL(*AsioService, Run());
+
+    Service->Run();
 
     // TODO: Create buffer factory.
     EXPECT_CALL(
-        mocked.AsioSocket,
-        Receive(::testing::StrEq(""), 1024, IAsioSocket::TReadCallback{mocked.Service, &IService::OnReceive}));
+        *AsioSocket,
+        Receive(::testing::StrEq(""), 1024, IAsioSocket::TReadCallback{Service, &IService::OnReceive}));
 
     auto success = boost::system::error_code{};
-    mocked.Service->OnAccept(success);
+    Service->OnAccept(success);
+}
+
+TEST_F(ServiceTests, ShouldPassNetworkMessageToManager)
+{
+    EXPECT_CALL(*AsioSocket, Receive(_, _, _));
+    Service->OnAccept({});
+
+    size_t length = 10;
+    auto message = std::make_unique<char[]>(length);
+    std::strncpy(message.get(), "12345678\r\n", length);
+
+    EXPECT_CALL(*Manager, ProcessMessageFromNet(Ref(message)));
+    EXPECT_CALL(*AsioSocket, Receive(_, _, _));
+
+    auto success = boost::system::error_code{};
+    Service->OnReceive(success, length);
 }
 
 }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
