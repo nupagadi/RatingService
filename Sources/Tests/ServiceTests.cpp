@@ -11,6 +11,8 @@ namespace Tests
 
 struct ServiceTests : ::testing::Test
 {
+    MockFactory Factory;
+
     std::shared_ptr<RatingService::Service> Service;
     AsioServiceMock* AsioService;
     AsioSocketMock* AsioSocket;
@@ -19,22 +21,23 @@ struct ServiceTests : ::testing::Test
 
     void SetUp() override
     {
-        auto asioService = std::make_unique<StrictMock<AsioServiceMock>>();
-        auto asioSocket = std::make_unique<StrictMock<AsioSocketMock>>();
-        auto asioAcceptor = std::make_unique<StrictMock<AsioAcceptorMock>>();
+        auto asioService = Factory.MakeMock<StrictMock<AsioServiceMock>>();
+        auto asioSocket = Factory.MakeMock<StrictMock<AsioSocketMock>>();
+        auto asioAcceptor = Factory.MakeMock<StrictMock<AsioAcceptorMock>>();
 
         AsioService = asioService.get();
         AsioSocket = asioSocket.get();
         AsioAcceptor = asioAcceptor.get();
-        Manager = std::make_unique<StrictMock<ManagerMock>>();
+        Manager = Factory.MakeMock<StrictMock<ManagerMock>>();
 
+        // Try Factory method.
         Service = std::make_shared<RatingService::Service>(
-            std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get(), 21345);
+            &Factory, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get(), 21345);
     }
 
     void TearDown() override
     {
-        // Seems GMock can't work properly with shared_from_this() objects.
+        // It seems GMock can't work well with shared_from_this() objects.
         ::testing::Mock::AllowLeak(AsioAcceptor);
         ::testing::Mock::AllowLeak(AsioService);
         ::testing::Mock::AllowLeak(AsioSocket);
@@ -61,7 +64,7 @@ TEST_F(ServiceTests, ShouldReceiveOnAccessSucceeded)
 
     Service->Run();
 
-    // TODO: Create buffer factory.
+    // TODO: Use buffer factory.
     EXPECT_CALL(
         *AsioSocket,
         Receive(::testing::StrEq(""), 1024, IAsioSocket::TReadCallback{Service, &IService::OnReceive}));
@@ -80,7 +83,7 @@ TEST_F(ServiceTests, ShouldPassNetworkMessageToManager)
     Service->OnAccept({});
 
     // TODO: Cannot check passed string content. Need buffer factory.
-    EXPECT_CALL(*Manager, ProcessMessageFromNet(_));
+    EXPECT_CALL(*Manager, ProcessMessageFromNetProxy(_));
     EXPECT_CALL(*AsioSocket, Receive(_, _, _));
 
     auto success = boost::system::error_code{};

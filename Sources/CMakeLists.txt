@@ -4,13 +4,17 @@ set(INCLUDES
     IService.hpp
     Service.hpp
     IAsio.hpp
+    Asio.hpp
     IManager.hpp
     Manager.hpp
+    IFactory.hpp
+    Factory.hpp
 )
 set(SOURCES
     Asio.cpp
     Service.cpp
     Manager.cpp
+    Factory.cpp
 )
 
 find_package(Threads REQUIRED)

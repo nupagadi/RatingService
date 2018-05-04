@@ -1,6 +1,11 @@
+#pragma once
+
+#include <iostream>
+
 #include "IManager.hpp"
 #include "IService.hpp"
 #include "IAsio.hpp"
+#include "IFactory.hpp"
 
 namespace RatingService
 {
@@ -8,12 +13,14 @@ namespace RatingService
 struct Service : std::enable_shared_from_this<Service>, IService
 {
     Service(
+        IFactory* aFactory,
         std::unique_ptr<IAsioService>&& aService,
         std::unique_ptr<IAsioAcceptor>&& aAcceptor,
         std::unique_ptr<IAsioSocket>&& aSocket,
         IManager* aManager,
         short aPort)
-        : mService(std::move(aService))
+        : mFactory(aFactory)
+        , mService(std::move(aService))
         , mAcceptor(std::move(aAcceptor))
         , mSocket(std::move(aSocket))
         , mManager(aManager)
@@ -21,6 +28,11 @@ struct Service : std::enable_shared_from_this<Service>, IService
         , mReadCallback(&IService::OnReceive)
         , mPort(aPort)
     {
+        assert(mFactory);
+        assert(mService);
+        assert(mAcceptor);
+        assert(mSocket);
+        assert(mManager);
     }
 
     void Run()
@@ -59,12 +71,12 @@ struct Service : std::enable_shared_from_this<Service>, IService
     {
         if (!aErrorCode)
         {
-            // TODO: Check if the message is complete (\r\n --> \0).
-//            mManager->ProcessMessageFromNet(mBuffer);
-
             std::cout << "Length: " << aLength;
             std::cout.write(mBuffer.get(), aLength) << std::flush;
 //            std::cout << mBuffer.get() << std::flush;
+
+            // TODO: Check if the message is complete (\r\n --> \0).
+            mManager->ProcessMessageFromNet(std::move(mBuffer));
 
             Receive();
         }
@@ -95,6 +107,8 @@ private:
 
     // TODO: May be decrease it.
     static const constexpr size_t MaxPacketSize = 1024;
+
+    IFactory* mFactory;
 
     std::unique_ptr<IAsioService> mService;
     std::unique_ptr<IAsioAcceptor> mAcceptor;

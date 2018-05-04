@@ -3,6 +3,7 @@
 // TODO: Remove.
 #include <iostream>
 
+#include "IFactory.hpp"
 #include "IService.hpp"
 
 struct SimpleManager
@@ -34,7 +35,9 @@ int main(int argc, char** argv)
         return EXIT_FAILURE;
     }
 
-    SimpleManager manager(RatingService::MakeSharedService(nullptr, std::atoi(argv[1])), std::atoi(argv[2]));
+    auto factory = RatingService::MakeFactory();
+
+    SimpleManager manager(factory->MakeSharedService(nullptr, std::atoi(argv[1])), std::atoi(argv[2]));
 
     manager.Run();
 

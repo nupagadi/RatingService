@@ -6,6 +6,7 @@
 #include "../IAsio.hpp"
 #include "../IManager.hpp"
 #include "../IService.hpp"
+#include "../IFactory.hpp"
 
 namespace RatingService
 {
@@ -38,8 +39,12 @@ struct ManagerMock : IManager
 {
     MOCK_METHOD0(Run, void());
 
-    // GMock doesn't support move-only arguments.
-    MOCK_METHOD1(ProcessMessageFromNet, void(const std::unique_ptr<char[]>& aMessage));
+    void ProcessMessageFromNet(std::unique_ptr<char[]> aMessage) override
+    {
+        ProcessMessageFromNetProxy(aMessage.get());
+    }
+
+    MOCK_METHOD1(ProcessMessageFromNetProxy, void(char* aMessage));
 };
 
 struct ServiceMock : IService
@@ -51,6 +56,49 @@ struct ServiceMock : IService
     MOCK_METHOD1(OnAccept, void(const boost::system::error_code& aErrorCode));
 
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
+};
+
+struct MockFactory : IFactory
+{
+    template <typename T,
+              template <typename, typename> typename TPtr = std::unique_ptr,
+              template <typename> typename TDelete = std::default_delete>
+    TPtr<T, TDelete<T>> MakeMock()
+    {
+        return TPtr<T, TDelete<T>>(new T);
+    }
+
+public:
+
+    MOCK_METHOD2(MakeSharedServiceProxy, IService*(IManager *aManager, short aPort));
+
+    MOCK_METHOD0(MakeAsioServiceProxy, IAsioService*());
+
+    MOCK_METHOD1(MakeAsioSocketProxy, IAsioSocket*(IAsioService* aAsioService));
+
+    MOCK_METHOD2(MakeAsioAcceptorProxy, IAsioAcceptor*(IAsioService* aAsioService, short aPort));
+
+public:
+
+    std::shared_ptr<IService> MakeSharedService(IManager *aManager, short aPort) override
+    {
+        return std::shared_ptr<IService>(MakeSharedServiceProxy(aManager, aPort));
+    }
+
+    std::unique_ptr<IAsioService> MakeAsioService() override
+    {
+        return std::unique_ptr<IAsioService>(MakeAsioServiceProxy());
+    }
+
+    std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService) override
+    {
+        return std::unique_ptr<IAsioSocket>(MakeAsioSocketProxy(aAsioService));
+    }
+
+    std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort) override
+    {
+        return std::unique_ptr<IAsioAcceptor>(MakeAsioAcceptorProxy(aAsioService, aPort));
+    }
 };
 
 }

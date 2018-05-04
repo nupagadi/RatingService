@@ -12,7 +12,7 @@ struct IManager
     // TODO: Inherit from IWorker?
     virtual void Run() = 0;
 
-    virtual void ProcessMessageFromNet(const std::unique_ptr<char[]>& aMessage) = 0;
+    virtual void ProcessMessageFromNet(std::unique_ptr<char[]> aMessage) = 0;
 };
 
 }

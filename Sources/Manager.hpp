@@ -21,7 +21,7 @@ struct Manager : IManager
 
     }
 
-    void ProcessMessageFromNet(const std::unique_ptr<char[]>& /*aMessage*/) override
+    void ProcessMessageFromNet(std::unique_ptr<char[]> /*aMessage*/) override
     {
 
     }
