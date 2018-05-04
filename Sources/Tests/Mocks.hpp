@@ -18,6 +18,8 @@ namespace Tests
 using ::testing::_;
 using ::testing::StrictMock;
 using ::testing::Ref;
+using ::testing::DefaultValue;
+using ::testing::Return;
 
 struct AsioServiceMock : IAsioService
 {
@@ -81,12 +83,10 @@ struct WorkerMock : IWorker
 
 struct MockFactory : IFactory
 {
-    template <typename T,
-              template <typename, typename> typename TPtr = std::unique_ptr,
-              template <typename> typename TDelete = std::default_delete>
-    TPtr<T, TDelete<T>> MakeMock()
+    template <typename T, template <typename...> typename TPtr = std::unique_ptr>
+    TPtr<T> MakeMock()
     {
-        return TPtr<T, TDelete<T>>(new T);
+        return TPtr<T>(new T);
     }
 
 public:

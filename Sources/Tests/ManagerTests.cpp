@@ -13,13 +13,13 @@ struct ManagerTests : ::testing::Test
 
     std::unique_ptr<RatingService::Manager> Manager;
     ServiceMock* Service;
+    std::vector<IWorker*> Workers;
 
     void SetUp() override
     {
-        auto service = std::make_unique<StrictMock<ServiceMock>>();
+        Service = new StrictMock<ServiceMock>;
 
-        Service = service.get();
-
+        EXPECT_CALL(Factory, MakeSharedServiceProxy(_)).WillOnce(Return(Service));
         Manager = std::make_unique<RatingService::Manager>(&Factory);
     }
 
