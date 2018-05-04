@@ -26,7 +26,7 @@ struct Task
 private:
 
     TWorker* mWorker;
-    Task mTask;
+    T mTask;
 };
 
 struct IWorker

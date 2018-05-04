@@ -3,10 +3,11 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include "../IFactory.hpp"
 #include "../IAsio.hpp"
 #include "../IManager.hpp"
 #include "../IService.hpp"
-#include "../IFactory.hpp"
+#include "../IWorker.hpp"
 
 namespace RatingService
 {
@@ -56,6 +57,26 @@ struct ServiceMock : IService
     MOCK_METHOD1(OnAccept, void(const boost::system::error_code& aErrorCode));
 
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
+};
+
+struct WorkerMock : IWorker
+{
+    MOCK_METHOD0(Run, void());
+
+    MOCK_METHOD1(PostProxy, void(TWorkerTask<std::unique_ptr<char[]>>*));
+
+    MOCK_METHOD1(ProcessProxy, void(char*));
+
+    void Post(TWorkerTask<std::unique_ptr<char[]>> aTask)
+    {
+        PostProxy(&aTask);
+    }
+
+    void Process(std::unique_ptr<char[]> aTask)
+    {
+        ProcessProxy(aTask.get());
+    }
+
 };
 
 struct MockFactory : IFactory
