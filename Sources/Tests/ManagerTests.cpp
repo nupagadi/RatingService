@@ -17,7 +17,8 @@ struct ManagerTests : ::testing::Test
 
     void SetUp() override
     {
-        Service = new StrictMock<ServiceMock>;
+        auto service = Factory.MakeMock<StrictMock<ServiceMock>>();
+        Service = service.release();
 
         EXPECT_CALL(Factory, MakeSharedServiceProxy(_)).WillOnce(Return(Service));
         Manager = std::make_unique<RatingService::Manager>(&Factory);
@@ -32,7 +33,7 @@ struct ManagerTests : ::testing::Test
     }
 };
 
-// TODO: ShouldPollService.
+// TODO: ShouldPollService0.
 TEST_F(ManagerTests, ShouldRunAllOnRun)
 {
     EXPECT_CALL(*Service, Run());
