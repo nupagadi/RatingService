@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "IManager.hpp"
 #include "IService.hpp"
+#include "IWorker.hpp"
 #include "IAsio.hpp"
 
 namespace RatingService
@@ -14,6 +17,8 @@ struct IFactory
     virtual std::unique_ptr<IManager> MakeManager(IFactory* aFactory) = 0;
 
     virtual std::shared_ptr<IService> MakeSharedService(IManager *aManager) = 0;
+
+    virtual std::vector<IWorker*> MakeWorkers(IManager *aManager) = 0;
 
     virtual std::unique_ptr<IAsioService> MakeAsioService() = 0;
 

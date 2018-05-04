@@ -95,6 +95,8 @@ public:
 
     MOCK_METHOD1(MakeSharedServiceProxy, IService*(IManager *aManager));
 
+    MOCK_METHOD1(MakeWorkers, std::vector<IWorker*>(IManager *aManager));
+
     MOCK_METHOD0(MakeAsioServiceProxy, IAsioService*());
 
     MOCK_METHOD1(MakeAsioSocketProxy, IAsioSocket*(IAsioService* aAsioService));

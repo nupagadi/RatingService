@@ -32,12 +32,16 @@ struct ManagerTests : ::testing::Test
     }
 };
 
-// TODO: ShouldPoll.
-TEST_F(ManagerTests, ShouldRunServiceOnRun)
+// TODO: ShouldPollService.
+TEST_F(ManagerTests, ShouldRunAllOnRun)
 {
     EXPECT_CALL(*Service, Run());
 
     Manager->Run();
+}
+
+TEST_F(ManagerTests, ShouldPostToAppropriateWorker)
+{
 }
 
 }

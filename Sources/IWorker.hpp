@@ -40,6 +40,8 @@ struct IWorker
 
     virtual void Post(TWorkerTask<std::unique_ptr<char[]>>) = 0;
 
+private:
+
     virtual void Process(std::unique_ptr<char[]>) = 0;
 };
 
