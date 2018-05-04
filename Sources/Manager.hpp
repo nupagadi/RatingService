@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IFactory.hpp"
 #include "IManager.hpp"
 #include "IService.hpp"
 
@@ -8,11 +9,8 @@ namespace RatingService
 
 struct Manager : IManager
 {
-    Manager(
-        std::unique_ptr<IService>&& aService,
-        size_t aThreadsCount)
-        : mService(std::move(aService))
-        , mThreadsCount(aThreadsCount)
+    Manager(IFactory* aFactory)
+        : mService(aFactory->MakeSharedService(this))
     {
     }
 
@@ -28,9 +26,7 @@ struct Manager : IManager
 
 private:
 
-    std::unique_ptr<IService> mService;
-
-    size_t mThreadsCount;
+    std::shared_ptr<IService> mService;
 };
 
 }

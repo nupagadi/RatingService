@@ -9,6 +9,8 @@ namespace Tests
 
 struct ManagerTests : ::testing::Test
 {
+    MockFactory Factory;
+
     std::unique_ptr<RatingService::Manager> Manager;
     ServiceMock* Service;
 
@@ -18,7 +20,7 @@ struct ManagerTests : ::testing::Test
 
         Service = service.get();
 
-        Manager = std::make_unique<RatingService::Manager>(std::move(service), 42);
+        Manager = std::make_unique<RatingService::Manager>(&Factory);
     }
 
     void TearDown() override

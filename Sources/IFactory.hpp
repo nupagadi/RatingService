@@ -11,7 +11,9 @@ struct IFactory
 {
     virtual ~IFactory() = default;
 
-    virtual std::shared_ptr<IService> MakeSharedService(IManager *aManager, short aPort) = 0;
+    virtual std::unique_ptr<IManager> MakeManager(IFactory* aFactory) = 0;
+
+    virtual std::shared_ptr<IService> MakeSharedService(IManager *aManager) = 0;
 
     virtual std::unique_ptr<IAsioService> MakeAsioService() = 0;
 
@@ -20,6 +22,6 @@ struct IFactory
     virtual std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort) = 0;
 };
 
-std::unique_ptr<IFactory> MakeFactory();
+std::unique_ptr<IFactory> MakeFactory(short aPort, size_t aThreadsCount);
 
 }

@@ -17,8 +17,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
         std::unique_ptr<IAsioService>&& aService,
         std::unique_ptr<IAsioAcceptor>&& aAcceptor,
         std::unique_ptr<IAsioSocket>&& aSocket,
-        IManager* aManager,
-        short aPort)
+        IManager* aManager)
         : mFactory(aFactory)
         , mService(std::move(aService))
         , mAcceptor(std::move(aAcceptor))
@@ -26,7 +25,6 @@ struct Service : std::enable_shared_from_this<Service>, IService
         , mManager(aManager)
         , mAcceptCallback(&IService::OnAccept)
         , mReadCallback(&IService::OnReceive)
-        , mPort(aPort)
     {
         assert(mFactory);
         assert(mService);
@@ -119,9 +117,6 @@ private:
     IAsioSocket::TReadCallback mReadCallback;
 
     std::unique_ptr<char[]> mBuffer;
-
-    // TODO: Remove? Need for Acceptor recreation?
-    short mPort {};
 };
 
 }

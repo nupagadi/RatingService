@@ -3,21 +3,33 @@
 #include "IFactory.hpp"
 #include "Service.hpp"
 #include "Asio.hpp"
+#include "Manager.hpp"
 
 namespace RatingService
 {
 
 struct Factory : IFactory
 {
-    std::shared_ptr<IService> MakeSharedService(IManager* aManager, short aPort) override
+    Factory(short aPort, size_t aThreadsCount)
+        : mAcceptorPort(aPort)
+        , mThreadsCount(aThreadsCount)
+    {
+    }
+
+    std::unique_ptr<IManager> MakeManager(IFactory* aFactory) override
+    {
+        return std::make_unique<Manager>(aFactory);
+    }
+
+    std::shared_ptr<IService> MakeSharedService(IManager* aManager) override
     {
         auto asioService = MakeAsioService();
         auto asioSocket = MakeAsioSocket(asioService.get());
-        auto asioAcceptor = MakeAsioAcceptor(asioService.get(), aPort);
+        auto asioAcceptor = MakeAsioAcceptor(asioService.get(), mAcceptorPort);
 
         // TODO: Remove port?
         return std::make_shared<Service>(
-            this, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager, 0);
+            this, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager);
     }
 
     std::unique_ptr<IAsioService> MakeAsioService() override
@@ -35,6 +47,10 @@ struct Factory : IFactory
         return std::make_unique<AsioAcceptor>(dynamic_cast<AsioService*>(aAsioService), aPort);
     }
 
+private:
+
+    short mAcceptorPort;
+    size_t mThreadsCount;
 };
 
 }

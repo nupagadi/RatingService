@@ -70,7 +70,9 @@ struct MockFactory : IFactory
 
 public:
 
-    MOCK_METHOD2(MakeSharedServiceProxy, IService*(IManager *aManager, short aPort));
+    MOCK_METHOD1(MakeManagerProxy, IManager*(IFactory* aFactory));
+
+    MOCK_METHOD1(MakeSharedServiceProxy, IService*(IManager *aManager));
 
     MOCK_METHOD0(MakeAsioServiceProxy, IAsioService*());
 
@@ -80,9 +82,14 @@ public:
 
 public:
 
-    std::shared_ptr<IService> MakeSharedService(IManager *aManager, short aPort) override
+    std::unique_ptr<IManager> MakeManager(IFactory* aFactory) override
     {
-        return std::shared_ptr<IService>(MakeSharedServiceProxy(aManager, aPort));
+        return std::unique_ptr<IManager>(MakeManagerProxy(aFactory));
+    }
+
+    std::shared_ptr<IService> MakeSharedService(IManager *aManager) override
+    {
+        return std::shared_ptr<IService>(MakeSharedServiceProxy(aManager));
     }
 
     std::unique_ptr<IAsioService> MakeAsioService() override

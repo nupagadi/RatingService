@@ -32,7 +32,7 @@ struct ServiceTests : ::testing::Test
 
         // Try Factory method.
         Service = std::make_shared<RatingService::Service>(
-            &Factory, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get(), 21345);
+            &Factory, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get());
     }
 
     void TearDown() override
