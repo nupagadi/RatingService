@@ -60,7 +60,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
         if (!aErrorCode)
         {
             // TODO: Check if the message is complete (\r\n --> \0).
-            mManager->ProcessMessageFromNet(mBuffer);
+//            mManager->ProcessMessageFromNet(mBuffer);
 
             std::cout << "Length: " << aLength;
             std::cout.write(mBuffer.get(), aLength) << std::flush;

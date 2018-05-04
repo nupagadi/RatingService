@@ -5,10 +5,12 @@ set(INCLUDES
     Service.hpp
     IAsio.hpp
     IManager.hpp
+    Manager.hpp
 )
 set(SOURCES
     Asio.cpp
     Service.cpp
+    Manager.cpp
 )
 
 find_package(Threads REQUIRED)

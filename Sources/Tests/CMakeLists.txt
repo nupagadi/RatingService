@@ -2,7 +2,7 @@ project(RatingServiceTests)
 cmake_minimum_required(VERSION 2.8)
 
 set(INCLUDES Mocks.hpp)
-set(SOURCES main.cpp ServiceTests.cpp)
+set(SOURCES main.cpp ServiceTests.cpp ManagerTests.cpp)
 
 find_package(Threads)
 find_package(GTest REQUIRED)

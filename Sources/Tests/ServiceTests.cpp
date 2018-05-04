@@ -9,15 +9,6 @@ namespace RatingService
 namespace Tests
 {
 
-struct MockedService
-{
-    std::shared_ptr<RatingService::Service> Service;
-    AsioServiceMock& AsioService;
-    AsioSocketMock& AsioSocket;
-    AsioAcceptorMock& AsioAcceptor;
-    std::unique_ptr<ManagerMock> Manager;
-};
-
 struct ServiceTests : ::testing::Test
 {
     std::shared_ptr<RatingService::Service> Service;

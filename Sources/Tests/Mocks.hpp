@@ -5,6 +5,7 @@
 
 #include "../IAsio.hpp"
 #include "../IManager.hpp"
+#include "../IService.hpp"
 
 namespace RatingService
 {
@@ -35,7 +36,21 @@ struct AsioSocketMock : IAsioSocket
 
 struct ManagerMock : IManager
 {
+    MOCK_METHOD0(Run, void());
+
+    // GMock doesn't support move-only arguments.
     MOCK_METHOD1(ProcessMessageFromNet, void(const std::unique_ptr<char[]>& aMessage));
+};
+
+struct ServiceMock : IService
+{
+    MOCK_METHOD0(Run, void());
+
+    MOCK_METHOD1(Stop, void(bool aForce));
+
+    MOCK_METHOD1(OnAccept, void(const boost::system::error_code& aErrorCode));
+
+    MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
 };
 
 }
