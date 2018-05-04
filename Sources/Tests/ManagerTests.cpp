@@ -9,7 +9,7 @@ namespace Tests
 
 struct ManagerTests : ::testing::Test
 {
-    RatingService::Manager Manager;
+    std::unique_ptr<RatingService::Manager> Manager;
     ServiceMock* Service;
 
     void SetUp() override
@@ -18,8 +18,7 @@ struct ManagerTests : ::testing::Test
 
         Service = service.get();
 
-//        Manager = std::make_shared<RatingService::Service>(
-//            std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get(), 21345);
+        Manager = std::make_unique<RatingService::Manager>(std::move(service), 42);
     }
 
     void TearDown() override
@@ -31,6 +30,13 @@ struct ManagerTests : ::testing::Test
     }
 };
 
+// TODO: ShouldPoll.
+TEST_F(ManagerTests, ShouldRunServiceOnRun)
+{
+    EXPECT_CALL(*Service, Run());
+
+    Manager->Run();
+}
 
 }
 }

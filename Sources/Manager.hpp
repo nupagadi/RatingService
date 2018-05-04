@@ -18,7 +18,7 @@ struct Manager : IManager
 
     void Run() override
     {
-
+        mService->Run();
     }
 
     void ProcessMessageFromNet(std::unique_ptr<char[]> /*aMessage*/) override
