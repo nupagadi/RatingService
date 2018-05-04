@@ -9,12 +9,15 @@ set(INCLUDES
     Manager.hpp
     IFactory.hpp
     Factory.hpp
+    IWorker.hpp
+    Worker.hpp
 )
 set(SOURCES
     Asio.cpp
     Service.cpp
     Manager.cpp
     Factory.cpp
+    Worker.cpp
 )
 
 find_package(Threads REQUIRED)
