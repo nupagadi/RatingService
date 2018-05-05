@@ -24,6 +24,13 @@ struct WorkerTests : ::testing::Test
     }
 };
 
+TEST_F(WorkerTests, ShouldRunServiceOnRun)
+{
+    ASSERT_TRUE(Factory.AsioService);
+    EXPECT_CALL(*Factory.AsioService, Run());
+
+    Worker->Run();
+}
 
 }
 }

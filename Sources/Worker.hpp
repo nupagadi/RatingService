@@ -1,4 +1,5 @@
 #pragma once
+#include <thread>
 
 #include "IFactory.hpp"
 #include "IWorker.hpp"
@@ -11,18 +12,16 @@ struct Worker : IWorker
 {
     // TODO: IData.
     Worker(IFactory* aFactory, IManager* aManager/*, IData* aData*/)
-        : mFactory(aFactory)
+        : mFactory((assert(aFactory), aFactory))
         , mManager(aManager)
+        , mAsioService(aFactory->MakeAsioService())
     {
-        assert(mFactory);
         assert(mManager);
     }
 
     void Run() override
     {
-        // TODO:
-//        mAsioService = aFactory->MakeAsioService();
-
+        mAsioService->Run();
     }
 
     void Post(TRawMessage) override
@@ -41,6 +40,7 @@ private:
     IFactory* mFactory;
     IManager* mManager;
     std::unique_ptr<IAsioService> mAsioService;
+    std::unique_ptr<std::thread> mThread;
 };
 
 }

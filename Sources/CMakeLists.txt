@@ -27,7 +27,7 @@ if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     add_library(RatingServiceLib ${INCLUDES} ${SOURCES})
     add_executable(${PROJECT_NAME} main.cpp)
-    target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} RatingServiceLib)
+    target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES} RatingServiceLib ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 #TODO:

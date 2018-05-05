@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "IFactory.hpp"
 #include "IManager.hpp"
 #include "IService.hpp"
@@ -18,9 +20,15 @@ struct Manager : IManager
     void Run() override
     {
         mService->Run();
+        std::vector<std::thread> threads;
         for (auto& e : mWorkers)
         {
-            e->Run();
+            threads.emplace_back([&e]{ e->Run(); });
+        }
+
+        for (auto& e : threads)
+        {
+            e.join();
         }
     }
 
@@ -31,6 +39,7 @@ struct Manager : IManager
         {
             aLength -= 2;
         }
+        // TODO: Pass shared_ptr from Worker.
         w->Post(IWorker::TRawMessage{w.get(), std::move(aMessage), aLength});
     }
 

@@ -86,9 +86,13 @@ struct WorkerMock : IWorker
 
 struct MockFactory : IFactory
 {
-    ManagerMock* Manager;
-    ServiceMock* Service;
+    ManagerMock* Manager {};
+    ServiceMock* Service {};
     std::vector<WorkerMock*> Workers;
+
+    AsioServiceMock* AsioService {};
+    AsioSocketMock* AsioSocket {};
+    AsioAcceptorMock* AsioAcceptor {};
 
     short Port;
     size_t ThreadsCount;
@@ -108,14 +112,6 @@ public:
     {
         return TPtr<T>(new T);
     }
-
-public:
-
-    MOCK_METHOD0(MakeAsioServiceProxy, IAsioService*());
-
-    MOCK_METHOD1(MakeAsioSocketProxy, IAsioSocket*(IAsioService* aAsioService));
-
-    MOCK_METHOD2(MakeAsioAcceptorProxy, IAsioAcceptor*(IAsioService* aAsioService, short aPort));
 
 public:
 
@@ -150,17 +146,23 @@ public:
 
     std::unique_ptr<IAsioService> MakeAsioService() override
     {
-        return std::unique_ptr<IAsioService>(MakeAsioServiceProxy());
+        auto temp = MakeMock<StrictMock<AsioServiceMock>>();
+        AsioService = temp.get();
+        return std::move(temp);
     }
 
-    std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService) override
+    std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* /*aAsioService*/) override
     {
-        return std::unique_ptr<IAsioSocket>(MakeAsioSocketProxy(aAsioService));
+        auto temp = MakeMock<StrictMock<AsioSocketMock>>();
+        AsioSocket = temp.get();
+        return std::move(temp);
     }
 
-    std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort) override
+    std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* /*aAsioService*/, short /*aPort*/) override
     {
-        return std::unique_ptr<IAsioAcceptor>(MakeAsioAcceptorProxy(aAsioService, aPort));
+        auto temp = MakeMock<StrictMock<AsioAcceptorMock>>();
+        AsioAcceptor = temp.get();
+        return std::move(temp);
     }
 };
 

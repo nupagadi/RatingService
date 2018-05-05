@@ -4,6 +4,7 @@
 #include "Service.hpp"
 #include "Asio.hpp"
 #include "Manager.hpp"
+#include "Worker.hpp"
 
 namespace RatingService
 {
@@ -27,17 +28,20 @@ struct Factory : IFactory
         auto asioSocket = MakeAsioSocket(asioService.get());
         auto asioAcceptor = MakeAsioAcceptor(asioService.get(), mAcceptorPort);
 
-        // TODO: Remove port?
         return std::make_shared<Service>(
             this, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager);
     }
 
     std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager) override
     {
-        (void)aFactory;
-        (void)aManager;
-        assert(false);
-        return {};
+        assert(aFactory);
+        assert(aManager);
+        std::vector<std::unique_ptr<IWorker>> result;
+        for (size_t i = 0; i < mThreadsCount; ++i)
+        {
+            result.push_back(std::make_unique<Worker>(aFactory, aManager));
+        }
+        return result;
     }
 
     std::unique_ptr<IAsioService> MakeAsioService() override
