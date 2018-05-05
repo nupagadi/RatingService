@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include "Mocks.hpp"
 #include "../Manager.hpp"
 
@@ -7,20 +9,28 @@ namespace RatingService
 namespace Tests
 {
 
+template <size_t N>
+std::unique_ptr<uint8_t[]> MakeRawMessage(const char(& aLiteral)[N])
+{
+    auto result = std::make_unique<uint8_t[]>(N);
+    std::memcpy(result.get(), aLiteral, N);
+    return result;
+}
+
 struct ManagerTests : ::testing::Test
 {
-    MockFactory Factory;
+    short Port = 11111;
+    size_t ThreadsCount = 4;
+
+public:
+
+    MockFactory Factory {Port, ThreadsCount};
 
     std::unique_ptr<RatingService::Manager> Manager;
-    ServiceMock* Service;
     std::vector<IWorker*> Workers;
 
     void SetUp() override
     {
-        auto service = Factory.MakeMock<StrictMock<ServiceMock>>();
-        Service = service.release();
-
-        EXPECT_CALL(Factory, MakeSharedServiceProxy(_)).WillOnce(Return(Service));
         Manager = std::make_unique<RatingService::Manager>(&Factory);
     }
 
@@ -33,16 +43,27 @@ struct ManagerTests : ::testing::Test
     }
 };
 
-// TODO: ShouldPollService0.
+// TODO: ShouldPollService.
 TEST_F(ManagerTests, ShouldRunAllOnRun)
 {
-    EXPECT_CALL(*Service, Run());
+    EXPECT_CALL(*Factory.Service, Run());
+    for (size_t i = 0; i < ThreadsCount; ++i)
+    {
+        EXPECT_CALL(*Factory.Workers[i], Run());
+    }
 
     Manager->Run();
 }
 
 TEST_F(ManagerTests, ShouldPostToAppropriateWorker)
 {
+    EXPECT_CALL(*Factory.Workers[1], PostProxy(_));
+
+    Manager->ProcessMessageFromNet(MakeRawMessage("90\0\0"), 4);
+
+    EXPECT_CALL(*Factory.Workers[0], PostProxy(_));
+
+    Manager->ProcessMessageFromNet(MakeRawMessage("\0\0\0\011"), 6);
 }
 
 }

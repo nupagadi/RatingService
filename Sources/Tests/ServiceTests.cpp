@@ -65,9 +65,7 @@ TEST_F(ServiceTests, ShouldReceiveOnAccessSucceeded)
     Service->Run();
 
     // TODO: Use buffer factory.
-    EXPECT_CALL(
-        *AsioSocket,
-        Receive(::testing::StrEq(""), 1024, IAsioSocket::TReadCallback{Service, &IService::OnReceive}));
+    EXPECT_CALL(*AsioSocket, Receive(_, 1024, IAsioSocket::TReadCallback{Service, &IService::OnReceive}));
 
     auto success = boost::system::error_code{};
     Service->OnAccept(success);
@@ -76,14 +74,14 @@ TEST_F(ServiceTests, ShouldReceiveOnAccessSucceeded)
 TEST_F(ServiceTests, ShouldPassNetworkMessageToManager)
 {
     size_t length = 10;
-    auto message = std::make_unique<char[]>(length);
-    std::strncpy(message.get(), "12345678\r\n", length);
+    auto message = std::make_unique<uint8_t[]>(length);
+    std::memcpy(message.get(), "12345678\r\n", length);
 
     EXPECT_CALL(*AsioSocket, Receive(_, _, _));
     Service->OnAccept({});
 
     // TODO: Cannot check passed string content. Need buffer factory.
-    EXPECT_CALL(*Manager, ProcessMessageFromNetProxy(_));
+    EXPECT_CALL(*Manager, ProcessMessageFromNetProxy(_, _));
     EXPECT_CALL(*AsioSocket, Receive(_, _, _));
 
     auto success = boost::system::error_code{};

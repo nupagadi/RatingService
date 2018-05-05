@@ -35,19 +35,19 @@ struct AsioAcceptorMock : IAsioAcceptor
 
 struct AsioSocketMock : IAsioSocket
 {
-     MOCK_METHOD3(Receive, void(char* aBuffer, size_t aMaxLength, TReadCallback aCallback));
+     MOCK_METHOD3(Receive, void(uint8_t* aBuffer, size_t aMaxLength, TReadCallback aCallback));
 };
 
 struct ManagerMock : IManager
 {
     MOCK_METHOD0(Run, void());
 
-    void ProcessMessageFromNet(std::unique_ptr<char[]> aMessage) override
+    void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) override
     {
-        ProcessMessageFromNetProxy(aMessage.get());
+        ProcessMessageFromNetProxy(aMessage.get(), aLength);
     }
 
-    MOCK_METHOD1(ProcessMessageFromNetProxy, void(char* aMessage));
+    MOCK_METHOD2(ProcessMessageFromNetProxy, void(uint8_t* aMessage, size_t aLength));
 };
 
 struct ServiceMock : IService
@@ -65,11 +65,11 @@ struct WorkerMock : IWorker
 {
     MOCK_METHOD0(Run, void());
 
-    MOCK_METHOD1(PostProxy, void(TWorkerTask<std::unique_ptr<char[]>>*));
+    MOCK_METHOD1(PostProxy, void(TRawMessage*));
 
     MOCK_METHOD1(ProcessProxy, void(char*));
 
-    void Post(TWorkerTask<std::unique_ptr<char[]>> aTask)
+    void Post(TRawMessage aTask)
     {
         PostProxy(&aTask);
     }
@@ -83,6 +83,22 @@ struct WorkerMock : IWorker
 
 struct MockFactory : IFactory
 {
+    ServiceMock* Service;
+    std::vector<WorkerMock*> Workers;
+
+    short Port;
+    size_t ThreadsCount;
+
+public:
+
+    MockFactory() = default;
+
+    MockFactory(short aPort, size_t aThreadsCount)
+        : Port(aPort)
+        , ThreadsCount(aThreadsCount)
+    {
+    }
+
     template <typename T, template <typename...> typename TPtr = std::unique_ptr>
     TPtr<T> MakeMock()
     {
@@ -92,10 +108,6 @@ struct MockFactory : IFactory
 public:
 
     MOCK_METHOD1(MakeManagerProxy, IManager*(IFactory* aFactory));
-
-    MOCK_METHOD1(MakeSharedServiceProxy, IService*(IManager *aManager));
-
-    MOCK_METHOD1(MakeWorkers, std::vector<IWorker*>(IManager *aManager));
 
     MOCK_METHOD0(MakeAsioServiceProxy, IAsioService*());
 
@@ -110,9 +122,26 @@ public:
         return std::unique_ptr<IManager>(MakeManagerProxy(aFactory));
     }
 
-    std::shared_ptr<IService> MakeSharedService(IManager *aManager) override
+    std::shared_ptr<IService> MakeSharedService(IManager */*aManager*/) override
     {
-        return std::shared_ptr<IService>(MakeSharedServiceProxy(aManager));
+        auto service = MakeMock<StrictMock<ServiceMock>, std::shared_ptr>();
+        Service = service.get();
+        return std::move(service);
+    }
+
+    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IManager */*aManager*/) override
+    {
+        Workers.clear();
+        std::vector<std::unique_ptr<IWorker>> result;
+
+        for (size_t i = 0; i < ThreadsCount; ++i)
+        {
+            auto temp = MakeMock<StrictMock<WorkerMock>>();
+            Workers.push_back(temp.get());
+            result.push_back(std::move(temp));
+        }
+
+        return std::move(result);
     }
 
     std::unique_ptr<IAsioService> MakeAsioService() override

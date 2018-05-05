@@ -5,11 +5,12 @@
 namespace RatingService
 {
 
-template <typename T, typename TWorker>
+template <typename TWorker, typename ...TArgs>
 struct Task
 {
-    Task(T&& aTask, TWorker* aWorker)
-        : mTask(aTask)
+    template <typename ...UArgs>
+    Task(TWorker* aWorker, UArgs&&... aTask)
+        : mTask(std::forward<UArgs>(aTask)...)
         , mWorker(aWorker)
     {
     }
@@ -25,20 +26,21 @@ struct Task
 
 private:
 
+    std::tuple<TArgs...> mTask;
     TWorker* mWorker;
-    T mTask;
 };
 
 struct IWorker
 {
-    template <typename T>
-    using TWorkerTask = Task<T, IWorker>;
+    template <typename ...TArgs>
+    using TWorkerTask = Task<IWorker, TArgs...>;
+    using TRawMessage = TWorkerTask<std::unique_ptr<uint8_t[]>, size_t>;
 
     virtual ~IWorker() = default;
 
     virtual void Run() = 0;
 
-    virtual void Post(TWorkerTask<std::unique_ptr<char[]>>) = 0;
+    virtual void Post(TRawMessage) = 0;
 
 private:
 

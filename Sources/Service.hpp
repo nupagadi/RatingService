@@ -70,11 +70,11 @@ struct Service : std::enable_shared_from_this<Service>, IService
         if (!aErrorCode)
         {
             std::cout << "Length: " << aLength;
-            std::cout.write(mBuffer.get(), aLength) << std::flush;
+            std::cout.write(reinterpret_cast<const char*>(mBuffer.get()), aLength) << std::flush;
 //            std::cout << mBuffer.get() << std::flush;
 
             // TODO: Check if the message is complete (\r\n --> \0).
-            mManager->ProcessMessageFromNet(std::move(mBuffer));
+            mManager->ProcessMessageFromNet(std::move(mBuffer), aLength);
 
             Receive();
         }
@@ -94,7 +94,7 @@ private:
 
     void Receive()
     {
-        mBuffer = std::make_unique<char[]>(MaxPacketSize);
+        mBuffer = std::make_unique<uint8_t[]>(MaxPacketSize);
         mSocket->Receive(mBuffer.get(), MaxPacketSize, mReadCallback);
     }
 
@@ -116,7 +116,7 @@ private:
     IAsioAcceptor::TAcceptCallback mAcceptCallback;
     IAsioSocket::TReadCallback mReadCallback;
 
-    std::unique_ptr<char[]> mBuffer;
+    std::unique_ptr<uint8_t[]> mBuffer;
 };
 
 }

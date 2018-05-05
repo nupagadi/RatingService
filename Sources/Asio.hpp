@@ -40,7 +40,7 @@ struct AsioSocket : IAsioSocket
     }
 
     void Receive(
-        char* aBuffer,
+        uint8_t* aBuffer,
         size_t aMaxLength,
         TReadCallback aCallback) override
     {
