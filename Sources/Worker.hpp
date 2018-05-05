@@ -24,12 +24,12 @@ struct Worker : IWorker
         mAsioService->Run();
     }
 
-    void Post(TRawMessage) override
+    void Post(TSharedRawMessage aMessage) override
     {
-
+        mAsioService->Post(std::move(aMessage));
     }
 
-    void Process(std::unique_ptr<uint8_t[]> aTask, size_t aLength) override
+    void Process(std::shared_ptr<uint8_t> aTask, size_t aLength) override
     {
         (void)aTask;
         (void)aLength;
@@ -40,7 +40,6 @@ private:
     IFactory* mFactory;
     IManager* mManager;
     std::unique_ptr<IAsioService> mAsioService;
-    std::unique_ptr<std::thread> mThread;
 };
 
 }

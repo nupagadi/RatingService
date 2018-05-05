@@ -32,5 +32,13 @@ TEST_F(WorkerTests, ShouldRunServiceOnRun)
     Worker->Run();
 }
 
+TEST_F(WorkerTests, ShouldPostToAsioServiceOnPost)
+{
+    ASSERT_TRUE(Factory.AsioService);
+    EXPECT_CALL(*Factory.AsioService, Post(_));
+
+    Worker->Post(TSharedRawMessage{Worker.get()});
+}
+
 }
 }

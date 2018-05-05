@@ -28,6 +28,8 @@ struct AsioServiceMock : IAsioService
 {
     MOCK_METHOD0(Run, void());
 
+    MOCK_METHOD1(Post, void(TSharedRawMessage));
+
     MOCK_METHOD1(Stop, void(bool aForce));
 };
 
@@ -68,19 +70,18 @@ struct WorkerMock : IWorker
 {
     MOCK_METHOD0(Run, void());
 
-    MOCK_METHOD1(PostProxy, void(TRawMessage*));
+    MOCK_METHOD1(PostProxy, void(TSharedRawMessage*));
 
     MOCK_METHOD2(ProcessProxy, void(uint8_t* aTask, size_t aLength));
 
-    void Post(TRawMessage aTask) override
+    void Post(TSharedRawMessage aTask) override
     {
         PostProxy(&aTask);
     }
 
-    // A crutch. Don't use it.
-    void Process(std::unique_ptr<uint8_t[]> aTask, size_t aLength) override
+    void Process(std::shared_ptr<uint8_t> aTask, size_t aLength) override
     {
-        ProcessProxy(aTask.release(), aLength);
+        ProcessProxy(aTask.get(), aLength);
     }
 
 };

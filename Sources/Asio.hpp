@@ -16,6 +16,11 @@ struct AsioService : IAsioService
         assert(mIoService.stopped());
     }
 
+    void Post(TSharedRawMessage aMessage) override
+    {
+        mIoService.post(std::move(aMessage));
+    }
+
     void Stop(bool aForce) override
     {
         if (aForce)

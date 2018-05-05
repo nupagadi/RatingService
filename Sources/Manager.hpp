@@ -22,7 +22,6 @@ struct Manager : IManager
         std::vector<std::thread> threads;
         for (auto& e : mWorkers)
         {
-//            e->Run();
             threads.emplace_back([&e]{ e->Run(); });
         }
 
@@ -42,7 +41,10 @@ struct Manager : IManager
             aLength -= 2;
         }
         // TODO: Pass shared_ptr from Worker.
-        w->Post(IWorker::TRawMessage{w.get(), std::move(aMessage), aLength});
+        w->Post(TSharedRawMessage{
+            w.get(),
+            std::shared_ptr<uint8_t>(aMessage.release(), std::default_delete<uint8_t[]>()),
+            aLength});
     }
 
 private:

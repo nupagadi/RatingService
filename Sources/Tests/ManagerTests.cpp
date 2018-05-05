@@ -69,17 +69,15 @@ TEST_F(ManagerTests, ShouldTrimEOL)
 {
     auto raw = MakeRawMessage("90\000\00032\r\n");
 
-    decltype(raw) uptr(raw.get());
+    // A crutch.
+    std::shared_ptr<uint8_t> sptr(raw.get(), [](uint8_t*){});
     auto w = Factory.Workers[1];
-    IWorker::TRawMessage task(w, std::move(uptr), 6);
+    TSharedRawMessage task(w, std::move(sptr), 6);
 
     EXPECT_CALL(*w, PostProxy(Pointee(Truly(
-        std::bind(&IWorker::TRawMessage::operator==, std::cref(task), std::placeholders::_1)))));
+        std::bind(&TSharedRawMessage::operator==, std::cref(task), std::placeholders::_1)))));
 
     Manager->ProcessMessageFromNet(std::move(raw), 8);
-
-    EXPECT_CALL(*w, ProcessProxy(_, _));
-    task();
 }
 
 }
