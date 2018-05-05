@@ -86,6 +86,7 @@ struct WorkerMock : IWorker
 
 struct MockFactory : IFactory
 {
+    ManagerMock* Manager;
     ServiceMock* Service;
     std::vector<WorkerMock*> Workers;
 
@@ -110,8 +111,6 @@ public:
 
 public:
 
-    MOCK_METHOD1(MakeManagerProxy, IManager*(IFactory* aFactory));
-
     MOCK_METHOD0(MakeAsioServiceProxy, IAsioService*());
 
     MOCK_METHOD1(MakeAsioSocketProxy, IAsioSocket*(IAsioService* aAsioService));
@@ -120,19 +119,21 @@ public:
 
 public:
 
-    std::unique_ptr<IManager> MakeManager(IFactory* aFactory) override
+    std::unique_ptr<IManager> MakeManager(IFactory* /*aFactory*/) override
     {
-        return std::unique_ptr<IManager>(MakeManagerProxy(aFactory));
+        auto manager = MakeMock<StrictMock<ManagerMock>>();
+        Manager = manager.get();
+        return std::move(manager);
     }
 
-    std::shared_ptr<IService> MakeSharedService(IManager */*aManager*/) override
+    std::shared_ptr<IService> MakeSharedService(IManager* /*aManager*/) override
     {
         auto service = MakeMock<StrictMock<ServiceMock>, std::shared_ptr>();
         Service = service.get();
         return std::move(service);
     }
 
-    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IManager */*aManager*/) override
+    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* /*aFactory*/, IManager* /*aManager*/) override
     {
         Workers.clear();
         std::vector<std::unique_ptr<IWorker>> result;

@@ -35,10 +35,6 @@ public:
 
     void TearDown() override
     {
-        // Seems GMock can't work properly with shared_from_this() objects.
-//        ::testing::Mock::AllowLeak(AsioAcceptor);
-//        ::testing::Mock::AllowLeak(AsioService);
-//        ::testing::Mock::AllowLeak(AsioSocket);
     }
 };
 

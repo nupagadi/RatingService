@@ -3,6 +3,7 @@
 namespace RatingService
 {
 
+// TODO: What's this?
 std::unique_ptr<IService> MakeManager(std::unique_ptr<IService>&& aService, size_t aThreadsCount)
 {
 //    auto asioService = MakeAsioService();

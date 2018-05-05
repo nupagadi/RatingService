@@ -32,8 +32,10 @@ struct Factory : IFactory
             this, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager);
     }
 
-    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IManager *aManager) override
+    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager) override
     {
+        (void)aFactory;
+        (void)aManager;
         assert(false);
         return {};
     }
