@@ -22,6 +22,7 @@ using ::testing::DefaultValue;
 using ::testing::Return;
 using ::testing::Pointee;
 using ::testing::Truly;
+using ::testing::InSequence;
 
 struct AsioServiceMock : IAsioService
 {

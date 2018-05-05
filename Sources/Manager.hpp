@@ -19,12 +19,14 @@ struct Manager : IManager
 
     void Run() override
     {
-        mService->Run();
         std::vector<std::thread> threads;
         for (auto& e : mWorkers)
         {
+//            e->Run();
             threads.emplace_back([&e]{ e->Run(); });
         }
+
+        mService->Run();
 
         for (auto& e : threads)
         {
