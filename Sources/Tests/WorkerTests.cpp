@@ -1,5 +1,4 @@
 #include "Mocks.hpp"
-#include "../Worker.hpp"
 
 namespace RatingService
 {
@@ -11,12 +10,12 @@ struct WorkerTests : ::testing::Test
 {
     MockFactory Factory;
 
-    std::unique_ptr<RatingService::Worker> Worker;
+    std::unique_ptr<RatingService::IWorker> Worker;
 
     void SetUp() override
     {
         Factory.MakeManager(&Factory);
-        Worker = std::make_unique<RatingService::Worker>(&Factory, Factory.Manager);
+        Worker = RatingService::MakeWorker(&Factory, Factory.Manager);
     }
 
     void TearDown() override

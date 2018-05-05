@@ -21,6 +21,8 @@ struct IWorker
 struct IFactory;
 struct IManager;
 
+std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager *aManager);
+
 std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager, size_t aThreadsCount);
 
 }

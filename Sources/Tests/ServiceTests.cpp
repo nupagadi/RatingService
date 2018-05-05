@@ -21,6 +21,7 @@ struct ServiceTests : ::testing::Test
 
     void SetUp() override
     {
+        // TODO: Refactor: use free factory method.
         auto asioService = Factory.MakeMock<StrictMock<AsioServiceMock>>();
         auto asioSocket = Factory.MakeMock<StrictMock<AsioSocketMock>>();
         auto asioAcceptor = Factory.MakeMock<StrictMock<AsioAcceptorMock>>();

@@ -1,7 +1,6 @@
 #include <cstring>
 
 #include "Mocks.hpp"
-#include "../Manager.hpp"
 
 namespace RatingService
 {
@@ -26,11 +25,11 @@ public:
 
     MockFactory Factory {Port, ThreadsCount};
 
-    std::unique_ptr<RatingService::Manager> Manager;
+    std::unique_ptr<RatingService::IManager> Manager;
 
     void SetUp() override
     {
-        Manager = std::make_unique<RatingService::Manager>(&Factory);
+        Manager = RatingService::MakeManager(&Factory);
     }
 
     void TearDown() override
