@@ -119,4 +119,14 @@ private:
     std::unique_ptr<uint8_t[]> mBuffer;
 };
 
+std::shared_ptr<IService> MakeSharedService(IFactory* aFactory, IManager* aManager, short aAcceptorPort)
+{
+    auto asioService = MakeAsioService();
+    auto asioSocket = MakeAsioSocket(asioService.get());
+    auto asioAcceptor = MakeAsioAcceptor(asioService.get(), aAcceptorPort);
+
+    return std::make_shared<Service>(
+        aFactory, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager);
+}
+
 }

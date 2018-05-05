@@ -42,4 +42,16 @@ private:
     std::unique_ptr<IAsioService> mAsioService;
 };
 
+std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager, size_t aThreadsCount)
+{
+    assert(aFactory);
+    assert(aManager);
+    std::vector<std::unique_ptr<IWorker>> result;
+    for (size_t i = 0; i < aThreadsCount; ++i)
+    {
+        result.push_back(std::make_unique<Worker>(aFactory, aManager));
+    }
+    return result;
+}
+
 }

@@ -15,4 +15,8 @@ struct IManager
     virtual void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) = 0;
 };
 
+struct IFactory;
+
+std::unique_ptr<IManager> MakeManager(IFactory* aFactory);
+
 }

@@ -44,4 +44,10 @@ struct IAsioAcceptor
     virtual void Accept(IAsioSocket* aSocket, TAcceptCallback aCallback) = 0;
 };
 
+std::unique_ptr<IAsioService> MakeAsioService();
+
+std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService);
+
+std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort);
+
 }

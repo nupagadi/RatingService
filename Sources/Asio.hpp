@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 
+#include "IWorker.hpp"
 #include "IAsio.hpp"
 
 namespace RatingService
@@ -78,5 +79,20 @@ private:
 
     boost::asio::ip::tcp::acceptor mAcceptor;
 };
+
+std::unique_ptr<IAsioService> MakeAsioService()
+{
+    return std::make_unique<AsioService>();
+}
+
+std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService)
+{
+    return std::make_unique<AsioSocket>(dynamic_cast<AsioService*>(aAsioService));
+}
+
+std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort)
+{
+    return std::make_unique<AsioAcceptor>(dynamic_cast<AsioService*>(aAsioService), aPort);
+}
 
 }

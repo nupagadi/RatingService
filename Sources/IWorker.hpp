@@ -18,4 +18,9 @@ struct IWorker
     virtual void Process(std::shared_ptr<uint8_t> aTask, size_t aLength) = 0;
 };
 
+struct IFactory;
+struct IManager;
+
+std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager, size_t aThreadsCount);
+
 }

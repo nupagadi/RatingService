@@ -1,10 +1,10 @@
 #pragma once
 
 #include "IFactory.hpp"
-#include "Service.hpp"
-#include "Asio.hpp"
-#include "Manager.hpp"
-#include "Worker.hpp"
+#include "IAsio.hpp"
+#include "IManager.hpp"
+#include "IService.hpp"
+#include "IWorker.hpp"
 
 namespace RatingService
 {
@@ -19,44 +19,33 @@ struct Factory : IFactory
 
     std::unique_ptr<IManager> MakeManager(IFactory* aFactory) override
     {
-        return std::make_unique<Manager>(aFactory);
+        return RatingService::MakeManager(aFactory);
     }
 
     std::shared_ptr<IService> MakeSharedService(IManager* aManager) override
     {
-        auto asioService = MakeAsioService();
-        auto asioSocket = MakeAsioSocket(asioService.get());
-        auto asioAcceptor = MakeAsioAcceptor(asioService.get(), mAcceptorPort);
-
-        return std::make_shared<Service>(
-            this, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager);
+        return RatingService::MakeSharedService(this, aManager, mAcceptorPort);
     }
 
+    // TODO: Why Factory here?
     std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager) override
     {
-        assert(aFactory);
-        assert(aManager);
-        std::vector<std::unique_ptr<IWorker>> result;
-        for (size_t i = 0; i < mThreadsCount; ++i)
-        {
-            result.push_back(std::make_unique<Worker>(aFactory, aManager));
-        }
-        return result;
+        return RatingService::MakeWorkers(aFactory, aManager, mThreadsCount);
     }
 
     std::unique_ptr<IAsioService> MakeAsioService() override
     {
-        return std::make_unique<AsioService>();
+        return RatingService::MakeAsioService();
     }
 
     std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService) override
     {
-        return std::make_unique<AsioSocket>(dynamic_cast<AsioService*>(aAsioService));
+        return RatingService::MakeAsioSocket(aAsioService);
     }
 
     std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort) override
     {
-        return std::make_unique<AsioAcceptor>(dynamic_cast<AsioService*>(aAsioService), aPort);
+        return RatingService::MakeAsioAcceptor(aAsioService, aPort);
     }
 
 private:

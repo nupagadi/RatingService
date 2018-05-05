@@ -14,11 +14,11 @@ set(INCLUDES
     Handlers.hpp
 )
 set(SOURCES
-#    Asio.cpp
-#    Service.cpp
-#    Manager.cpp
     Factory.cpp
-#    Worker.cpp
+    Asio.cpp
+    Manager.cpp
+    Service.cpp
+    Worker.cpp
 )
 
 find_package(Threads REQUIRED)

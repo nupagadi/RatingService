@@ -60,4 +60,9 @@ private:
     const std::vector<std::unique_ptr<IWorker>> mWorkers;
 };
 
+std::unique_ptr<IManager> MakeManager(IFactory* aFactory)
+{
+    return std::make_unique<Manager>(aFactory);
+}
+
 }
