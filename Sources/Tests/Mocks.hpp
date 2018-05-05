@@ -20,6 +20,8 @@ using ::testing::StrictMock;
 using ::testing::Ref;
 using ::testing::DefaultValue;
 using ::testing::Return;
+using ::testing::Pointee;
+using ::testing::Truly;
 
 struct AsioServiceMock : IAsioService
 {
@@ -67,16 +69,17 @@ struct WorkerMock : IWorker
 
     MOCK_METHOD1(PostProxy, void(TRawMessage*));
 
-    MOCK_METHOD1(ProcessProxy, void(char*));
+    MOCK_METHOD2(ProcessProxy, void(uint8_t* aTask, size_t aLength));
 
-    void Post(TRawMessage aTask)
+    void Post(TRawMessage aTask) override
     {
         PostProxy(&aTask);
     }
 
-    void Process(std::unique_ptr<char[]> aTask)
+    // A crutch. Don't use it.
+    void Process(std::unique_ptr<uint8_t[]> aTask, size_t aLength) override
     {
-        ProcessProxy(aTask.get());
+        ProcessProxy(aTask.release(), aLength);
     }
 
 };

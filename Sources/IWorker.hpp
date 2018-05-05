@@ -19,12 +19,23 @@ struct Task
     {
         if (mWorker)
         {
-            mWorker->Process(std::move(mTask));
+            DoCall(std::index_sequence_for<TArgs...>{});
         }
         mWorker = nullptr;
     }
 
+    bool operator==(const Task& aRight) const
+    {
+        return mWorker == aRight.mWorker && mTask == aRight.mTask;
+    }
+
 private:
+
+    template <size_t ...S>
+    void DoCall(std::index_sequence<S...>)
+    {
+        mWorker->Process(std::move(std::get<S>(mTask))...);
+    }
 
     std::tuple<TArgs...> mTask;
     TWorker* mWorker;
@@ -42,9 +53,7 @@ struct IWorker
 
     virtual void Post(TRawMessage) = 0;
 
-private:
-
-    virtual void Process(std::unique_ptr<char[]>) = 0;
+    virtual void Process(std::unique_ptr<uint8_t[]> aTask, size_t aLength) = 0;
 };
 
 }

@@ -27,6 +27,10 @@ struct Manager : IManager
     void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) override
     {
         auto& w = mWorkers[WorkerId(aMessage.get())];
+        if (aMessage[aLength - 2] == '\r' && aMessage[aLength - 1] == '\n')
+        {
+            aLength -= 2;
+        }
         w->Post(IWorker::TRawMessage{w.get(), std::move(aMessage), aLength});
     }
 

@@ -27,7 +27,6 @@ public:
     MockFactory Factory {Port, ThreadsCount};
 
     std::unique_ptr<RatingService::Manager> Manager;
-    std::vector<IWorker*> Workers;
 
     void SetUp() override
     {
@@ -58,12 +57,30 @@ TEST_F(ManagerTests, ShouldRunAllOnRun)
 TEST_F(ManagerTests, ShouldPostToAppropriateWorker)
 {
     EXPECT_CALL(*Factory.Workers[1], PostProxy(_));
-
-    Manager->ProcessMessageFromNet(MakeRawMessage("90\0\0"), 4);
+    Manager->ProcessMessageFromNet(MakeRawMessage("90\0\032\r\n"), 4); // 12345
 
     EXPECT_CALL(*Factory.Workers[0], PostProxy(_));
+    Manager->ProcessMessageFromNet(MakeRawMessage("\0\0\0\011\r\n"), 6);
 
-    Manager->ProcessMessageFromNet(MakeRawMessage("\0\0\0\011"), 6);
+    EXPECT_CALL(*Factory.Workers[3], PostProxy(_));
+    Manager->ProcessMessageFromNet(MakeRawMessage("\3\0\0\011\r\n"), 6);
+}
+
+TEST_F(ManagerTests, ShouldTrimEOL)
+{
+    auto raw = MakeRawMessage("90\000\00032\r\n");
+
+    decltype(raw) uptr(raw.get());
+    auto w = Factory.Workers[1];
+    IWorker::TRawMessage task(w, std::move(uptr), 6);
+
+    EXPECT_CALL(*w, PostProxy(Pointee(Truly(
+        std::bind(&IWorker::TRawMessage::operator==, std::cref(task), std::placeholders::_1)))));
+
+    Manager->ProcessMessageFromNet(std::move(raw), 8);
+
+    EXPECT_CALL(*w, ProcessProxy(_, _));
+    task();
 }
 
 }
