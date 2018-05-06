@@ -1,10 +1,6 @@
 #pragma once
 
 #include "IFactory.hpp"
-#include "IAsio.hpp"
-#include "IManager.hpp"
-#include "IService.hpp"
-#include "IWorker.hpp"
 
 namespace RatingService
 {
@@ -50,7 +46,7 @@ struct Factory : IFactory
 
     std::unique_ptr<IData> MakeData() override
     {
-        return RatingService::MakeData();
+        return RatingService::MakeData(mThreadsCount);
     }
 
 private:

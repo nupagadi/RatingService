@@ -36,7 +36,7 @@ struct Worker : IWorker
     {
         assert(mManager);
         assert(mData);
-        mConnected.reserve(1000000);
+        mConnected.reserve(100'000);
     }
 
     void Run() override

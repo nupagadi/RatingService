@@ -13,9 +13,12 @@ namespace RatingService
 struct DataEntry
 {
     static const constexpr size_t Size = sizeof(TClientId) + sizeof(TMessageType) + NameMaxSize;
+
     std::array<TByte, Size> ClientInfo;
-    double Total {};
+    double Total;
 };
+
+static_assert(std::is_trivial<DataEntry>(), "DataEntry should be trivial.");
 
 struct IData
 {
@@ -32,6 +35,6 @@ struct IData
 
 struct IFactory;
 
-std::unique_ptr<IData> MakeData();
+std::unique_ptr<IData> MakeData(size_t aThreadsCount);
 
 }
