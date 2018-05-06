@@ -35,6 +35,30 @@ struct Data : IData
 
     void Rename(TClientId aClientId, TSharedRawMessage aName, size_t aLength) override
     {
+        if (auto ptr = GetEntryPointer(aClientId))
+        {
+            SetName(ptr, aName.get(), aLength);
+        }
+    }
+
+    void AddDeal(TClientId aClientId, double aAmount) override
+    {
+        if (auto ptr = GetEntryPointer(aClientId))
+        {
+            ptr->Total += aAmount;
+        }
+    }
+
+    std::vector<DataEntry> Copy() const override
+    {
+        assert(false);
+        return {};
+    }
+
+private:
+
+    DataEntry* GetEntryPointer(TClientId aClientId)
+    {
         auto& workerEntries = mEntries[aClientId % mThreadsCount];
 
         auto it = mClientIdToPosition.find(aClientId);
@@ -43,24 +67,12 @@ struct Data : IData
 
         if (it == mClientIdToPosition.cend() || workerEntries.size() <= it->second)
         {
-            std::cerr << "Data::Rename" << "Not found: " << aClientId << std::endl;
-            return;
+            std::cerr << "Data: " << "Not found: " << aClientId << std::endl;
+            return nullptr;
         }
 
-        SetName(&workerEntries[it->second], aName.get(), aLength);
+        return &workerEntries[it->second];
     }
-
-    void AddDeal(TClientId /*aClientId*/, double /*aAmount*/) override
-    {
-
-    }
-
-    std::vector<DataEntry> Copy() const override
-    {
-        return {};
-    }
-
-private:
 
     void SetName(DataEntry* aEntry, const TByte* aFrom, size_t aLength)
     {
