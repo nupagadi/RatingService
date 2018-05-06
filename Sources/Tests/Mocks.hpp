@@ -96,6 +96,8 @@ struct DataMock : IData
     MOCK_METHOD2(AddDeal, void(TClientId aClientId, double aAmount));
 
     MOCK_CONST_METHOD0(Copy, std::vector<DataEntry>());
+
+    MOCK_METHOD1(Drop, void(size_t aWorkerId));
 };
 
 struct MockFactory : IFactory

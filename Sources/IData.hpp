@@ -32,6 +32,8 @@ struct IData
     virtual void AddDeal(TClientId aClientId, double aAmount) = 0;
 
     virtual std::vector<DataEntry> Copy() const = 0;
+
+    virtual void Drop(size_t aWorkerId) = 0;
 };
 
 struct IFactory;

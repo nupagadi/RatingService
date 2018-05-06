@@ -69,6 +69,16 @@ struct Data : IData
         return std::move(result);
     }
 
+    // TODO: Drop signals to all Workers.
+    void Drop(size_t aWorkerId) override
+    {
+        assert(aWorkerId < mEntries.size());
+        for (auto& e : mEntries[aWorkerId])
+        {
+            e.Total = 0;
+        }
+    }
+
 private:
 
     DataEntry* GetEntryPointer(TClientId aClientId)
