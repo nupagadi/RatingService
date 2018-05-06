@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <thread>
 
 #include "IFactory.hpp"
@@ -38,6 +39,9 @@ struct Manager : IManager
     void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) override
     {
         auto& w = mWorkers[WorkerId(aMessage.get())];
+
+        std::cout << "WorkerId:" << WorkerId(aMessage.get()) << std::endl;
+
         if (aMessage[aLength - 2] == '\r' && aMessage[aLength - 1] == '\n')
         {
             aLength -= 2;

@@ -41,6 +41,8 @@ struct AsioAcceptorMock : IAsioAcceptor
 struct AsioSocketMock : IAsioSocket
 {
      MOCK_METHOD3(Receive, void(uint8_t* aBuffer, size_t aMaxLength, TReadCallback aCallback));
+
+     MOCK_METHOD0(Close, void());
 };
 
 struct ManagerMock : IManager

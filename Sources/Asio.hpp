@@ -56,6 +56,13 @@ struct AsioSocket : IAsioSocket
         mSocket.async_read_some(boost::asio::buffer(aBuffer, aMaxLength), aCallback);
     }
 
+    void Close()
+    {
+        boost::system::error_code ec;
+        mSocket.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+        mSocket.close();
+    }
+
 private:
 
     boost::asio::ip::tcp::socket mSocket;
@@ -95,6 +102,10 @@ std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService)
 
 std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort)
 {
+    // TODO: Operate:
+    // terminate called after throwing an instance of
+    // 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::system::system_error> >'
+    // what():  bind: Address already in use
     return std::make_unique<AsioAcceptor>(dynamic_cast<AsioService*>(aAsioService), aPort);
 }
 

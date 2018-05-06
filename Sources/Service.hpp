@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <boost/asio/error.hpp>
 
 #include "IManager.hpp"
 #include "IService.hpp"
@@ -73,10 +74,14 @@ struct Service : std::enable_shared_from_this<Service>, IService
             std::cout.write(reinterpret_cast<const char*>(mBuffer.get()), aLength) << std::flush;
 //            std::cout << mBuffer.get() << std::flush;
 
-            // TODO: Check if the message is complete (\r\n --> \0).
             mManager->ProcessMessageFromNet(std::move(mBuffer), aLength);
 
             Receive();
+        }
+        else if (aErrorCode == boost::asio::error::eof)
+        {
+            mSocket->Close();
+            Accept();
         }
         else
         {

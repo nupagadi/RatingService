@@ -31,6 +31,8 @@ struct IAsioSocket
     virtual ~IAsioSocket() = default;
 
     virtual void Receive(uint8_t* aBuffer, size_t aMaxLength, TReadCallback) = 0;
+
+    virtual void Close() = 0;
 };
 
 // TODO: Template for IService.
