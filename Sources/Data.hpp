@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <unordered_map>
+#include <algorithm>
 
 #include "IData.hpp"
 #include "RawMessageTools.hpp"
@@ -51,8 +52,21 @@ struct Data : IData
 
     std::vector<DataEntry> Copy() const override
     {
-        assert(false);
-        return {};
+        auto size = std::accumulate(
+            mEntries.cbegin(), mEntries.cend(), 0,
+            [](size_t size, const auto& entry)
+            { return size + entry.size(); });
+
+        decltype(Copy()) result(size);
+
+        auto begin = result.begin();
+        for (const auto& e : mEntries)
+        {
+            // memmove here:
+            begin = std::copy(e.cbegin(), e.cend(), begin);
+        }
+
+        return std::move(result);
     }
 
 private:
