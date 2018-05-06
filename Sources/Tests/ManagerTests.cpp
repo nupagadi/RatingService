@@ -69,7 +69,7 @@ TEST_F(ManagerTests, ShouldTrimEOL)
     auto raw = MakeRawMessage("90\000\00032\r\n");
 
     // A crutch.
-    std::shared_ptr<uint8_t> sptr(raw.get(), [](uint8_t*){});
+    TSharedRawMessage sptr(raw.get(), [](uint8_t*){});
     auto w = Factory.Workers[1];
     TSharedRawMessageTask task(w, std::move(sptr), 6);
 

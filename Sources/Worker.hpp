@@ -10,7 +10,6 @@ namespace RatingService
 
 struct Worker : IWorker
 {
-    // TODO: IData.
     Worker(IFactory* aFactory, IManager* aManager, IData* aData)
         : mFactory((assert(aFactory), aFactory))
         , mManager(aManager)
@@ -31,7 +30,7 @@ struct Worker : IWorker
         mAsioService->Post(std::move(aMessage));
     }
 
-    void Process(std::shared_ptr<uint8_t> aTask, size_t aLength) override
+    void Process(TSharedRawMessage aTask, size_t aLength) override
     {
         (void)aTask;
         (void)aLength;
@@ -49,6 +48,8 @@ std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager *aManager, IDat
 {
     assert(aFactory);
     assert(aManager);
+    assert(aData);
+
     return std::make_unique<Worker>(aFactory, aManager, aData);
 }
 
@@ -57,6 +58,8 @@ std::vector<std::unique_ptr<IWorker>> MakeWorkers(
 {
     assert(aFactory);
     assert(aManager);
+    assert(aData);
+
     std::vector<std::unique_ptr<IWorker>> result;
     for (size_t i = 0; i < aThreadsCount; ++i)
     {

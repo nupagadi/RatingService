@@ -15,7 +15,7 @@ struct IWorker
 
     virtual void Post(TSharedRawMessageTask) = 0;
 
-    virtual void Process(std::shared_ptr<uint8_t> aTask, size_t aLength) = 0;
+    virtual void Process(TSharedRawMessage aTask, size_t aLength) = 0;
 };
 
 struct IData;

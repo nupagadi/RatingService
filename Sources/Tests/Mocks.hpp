@@ -79,7 +79,7 @@ struct WorkerMock : IWorker
         PostProxy(&aTask);
     }
 
-    void Process(std::shared_ptr<uint8_t> aTask, size_t aLength) override
+    void Process(TSharedRawMessage aTask, size_t aLength) override
     {
         ProcessProxy(aTask.get(), aLength);
     }

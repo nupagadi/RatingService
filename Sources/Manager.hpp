@@ -45,7 +45,7 @@ struct Manager : IManager
         // TODO: Pass shared_ptr from Worker.
         w->Post(TSharedRawMessageTask{
             w.get(),
-            std::shared_ptr<uint8_t>(aMessage.release(), std::default_delete<uint8_t[]>()),
+            TSharedRawMessage(aMessage.release(), std::default_delete<uint8_t[]>()),
             aLength});
     }
 
