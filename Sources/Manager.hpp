@@ -15,7 +15,7 @@ struct Manager : IManager
     Manager(IFactory* aFactory)
         : mService(aFactory->MakeSharedService(this))
         , mData(aFactory->MakeData())
-        , mWorkers(aFactory->MakeWorkers(aFactory, this, mData))
+        , mWorkers(aFactory->MakeWorkers(aFactory, this, mData.get()))
     {
     }
 

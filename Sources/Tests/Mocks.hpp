@@ -83,7 +83,17 @@ struct WorkerMock : IWorker
     {
         ProcessProxy(aTask.get(), aLength);
     }
+};
 
+struct DataMock : IData
+{
+    MOCK_METHOD2(Register, void(TClientId aClientId, TSharedRawMessage aName));
+
+    MOCK_METHOD2(Rename, void(TClientId aClientId, TSharedRawMessage aName));
+
+    MOCK_METHOD2(AddDeal, void(TClientId aClientId, TSharedRawMessage aName));
+
+    MOCK_CONST_METHOD0(Copy, std::vector<DataEntry>());
 };
 
 struct MockFactory : IFactory
@@ -91,6 +101,7 @@ struct MockFactory : IFactory
     ManagerMock* Manager {};
     ServiceMock* Service {};
     std::vector<WorkerMock*> Workers;
+    DataMock* Data {};
 
     AsioServiceMock* AsioService {};
     AsioSocketMock* AsioSocket {};
@@ -131,7 +142,7 @@ public:
         return std::move(service);
     }
 
-    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* /*aFactory*/, IManager* /*aManager*/) override
+    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory*, IManager*, IData*) override
     {
         Workers.clear();
         std::vector<std::unique_ptr<IWorker>> result;
@@ -145,6 +156,14 @@ public:
 
         return std::move(result);
     }
+
+    std::unique_ptr<IData> MakeData() override
+    {
+        auto temp = MakeMock<StrictMock<DataMock>>();
+        Data = temp.get();
+        return std::move(temp);
+    }
+
 
     std::unique_ptr<IAsioService> MakeAsioService() override
     {

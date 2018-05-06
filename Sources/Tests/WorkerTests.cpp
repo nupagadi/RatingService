@@ -15,7 +15,8 @@ struct WorkerTests : ::testing::Test
     void SetUp() override
     {
         Factory.MakeManager(&Factory);
-        Worker = RatingService::MakeWorker(&Factory, Factory.Manager);
+        Factory.MakeData();
+        Worker = RatingService::MakeWorker(&Factory, Factory.Manager, Factory.Data);
     }
 
     void TearDown() override

@@ -28,9 +28,9 @@ struct Factory : IFactory
     }
 
     // TODO: Why Factory here?
-    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager) override
+    std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager* aManager, IData* aData) override
     {
-        return RatingService::MakeWorkers(aFactory, aManager, mThreadsCount);
+        return RatingService::MakeWorkers(aFactory, aManager, aData, mThreadsCount);
     }
 
     std::unique_ptr<IAsioService> MakeAsioService() override

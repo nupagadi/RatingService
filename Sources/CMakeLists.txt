@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(INCLUDES
     Asio.hpp
+    Data.hpp
     Factory.hpp
     Handlers.hpp
     IAsio.hpp
@@ -17,6 +18,7 @@ set(INCLUDES
 )
 set(SOURCES
     Asio.cpp
+    Data.cpp
     Factory.cpp
     Manager.cpp
     Service.cpp

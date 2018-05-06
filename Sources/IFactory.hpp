@@ -18,9 +18,9 @@ struct IFactory
 
     virtual std::unique_ptr<IManager> MakeManager(IFactory* aFactory) = 0;
 
-    virtual std::shared_ptr<IService> MakeSharedService(IManager *aManager) = 0;
+    virtual std::shared_ptr<IService> MakeSharedService(IManager* aManager) = 0;
 
-    virtual std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager *aManager) = 0;
+    virtual std::vector<std::unique_ptr<IWorker>> MakeWorkers(IFactory* aFactory, IManager* aManager, IData* aData) = 0;
 
     virtual std::unique_ptr<IAsioService> MakeAsioService() = 0;
 
