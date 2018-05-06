@@ -17,7 +17,7 @@ struct Data : IData
 
     }
 
-    void AddDeal(TClientId /*aClientId*/, TSharedRawMessage /*aName*/) override
+    void AddDeal(TClientId /*aClientId*/, double /*aAmount*/) override
     {
 
     }

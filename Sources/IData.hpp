@@ -25,7 +25,7 @@ struct IData
 
     virtual void Rename(TClientId aClientId, TSharedRawMessage aName) = 0;
 
-    virtual void AddDeal(TClientId aClientId, TSharedRawMessage aName) = 0;
+    virtual void AddDeal(TClientId aClientId, double aAmount) = 0;
 
     virtual std::vector<DataEntry> Copy() const = 0;
 };

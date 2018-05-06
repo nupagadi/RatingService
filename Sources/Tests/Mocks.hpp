@@ -93,7 +93,7 @@ struct DataMock : IData
 
     MOCK_METHOD2(Rename, void(TClientId aClientId, TSharedRawMessage aName));
 
-    MOCK_METHOD2(AddDeal, void(TClientId aClientId, TSharedRawMessage aName));
+    MOCK_METHOD2(AddDeal, void(TClientId aClientId, double aAmount));
 
     MOCK_CONST_METHOD0(Copy, std::vector<DataEntry>());
 };

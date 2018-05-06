@@ -1,6 +1,8 @@
 #pragma once
 
+#include <cstring>
 #include <iostream>
+#include <array>
 #include <boost/asio/error.hpp>
 
 #include "IManager.hpp"
@@ -70,17 +72,43 @@ struct Service : std::enable_shared_from_this<Service>, IService
     {
         if (!aErrorCode)
         {
-            std::cout << "Length: " << aLength;
-            std::cout.write(reinterpret_cast<const char*>(mBuffer.get()), aLength) << std::flush;
+            std::cout << "Length:" << aLength << std::endl;
+            std::cout.write(reinterpret_cast<const char*>(mBuffer.data()), aLength) << std::endl;
 //            std::cout << mBuffer.get() << std::flush;
 
-            mManager->ProcessMessageFromNet(std::move(mBuffer), aLength);
+            auto begin = mBuffer.data();
+            auto findBegin = begin;
+            while (auto end = static_cast<uint8_t*>(
+                std::memchr(findBegin, '\r', mBuffer.data() + aLength - findBegin)))
+            {
+                if (end[1] != '\n')
+                {
+                    findBegin = end + 1;
+                    continue;
+                }
+
+                auto remainderBufferSize = mRemainderBuffer.size();
+                auto message = std::make_unique<TByte[]>(end - begin + remainderBufferSize);
+                std::memcpy(message.get(), mRemainderBuffer.data(), remainderBufferSize);
+                std::memcpy(message.get() + remainderBufferSize, begin, end - begin);
+                mManager->ProcessMessageFromNet(std::move(message), end - begin + remainderBufferSize);
+                mRemainderBuffer.clear();
+
+                findBegin = begin = end + 2;
+            }
+
+            auto remainderCount = mBuffer.data() + aLength - findBegin;
+            if (remainderCount)
+            {
+                mRemainderBuffer.assign(mBuffer.data(), mBuffer.data() + remainderCount);
+            }
 
             Receive();
         }
         else if (aErrorCode == boost::asio::error::eof)
         {
             mSocket->Close();
+            std::cout << "Connection lost." << std::endl;
             Accept();
         }
         else
@@ -99,8 +127,7 @@ private:
 
     void Receive()
     {
-        mBuffer = std::make_unique<uint8_t[]>(MaxPacketSize);
-        mSocket->Receive(mBuffer.get(), MaxPacketSize, mReadCallback);
+        mSocket->Receive(mBuffer.data(), MaxNetPacketSize, mReadCallback);
     }
 
     // TODO: Implement?
@@ -109,7 +136,7 @@ private:
 private:
 
     // TODO: May be decrease it.
-    static const constexpr size_t MaxPacketSize = 1024;
+    static const constexpr size_t MaxNetPacketSize = 1024;
 
     IFactory* mFactory;
 
@@ -121,7 +148,9 @@ private:
     IAsioAcceptor::TAcceptCallback mAcceptCallback;
     IAsioSocket::TReadCallback mReadCallback;
 
-    std::unique_ptr<uint8_t[]> mBuffer;
+    std::array<TByte, MaxNetPacketSize> mBuffer;
+    // Will be used rarely.
+    std::string mRemainderBuffer;
 };
 
 std::shared_ptr<IService> MakeSharedService(IFactory* aFactory, IManager* aManager, short aAcceptorPort)
