@@ -2,29 +2,13 @@
 
 #include <cmath>
 #include <iostream>
-#include <thread>
 #include <unordered_set>
 
 #include "IFactory.hpp"
+#include "RawMessageTools.hpp"
 
 namespace RatingService
 {
-
-enum class MessageType : uint32_t
-{
-    UNKNOWN = 0,
-    Registered = 1,
-    Renamed = 2,
-    DealWon = 3,
-    Connected = 4,
-    Disconnected = 5,
-    Rating = 6,
-};
-
-const constexpr size_t MinRegisteredSize = 9;
-const constexpr size_t MaxRegisteredSize = 64;
-const constexpr size_t DealWonSize = 24;
-const constexpr size_t ConnectedSize = 8;
 
 struct Worker : IWorker
 {
@@ -51,38 +35,40 @@ struct Worker : IWorker
 
     void Process(TSharedRawMessage aTask, size_t aLength) override
     {
-        auto clientId = GetClientId(aTask.get());
-        switch (GetMessageType(aTask.get()))
+        auto clientId = RawMessageTools::GetClientId(aTask.get());
+
+        using MessageType = RawMessageTools::MessageType;
+        switch (RawMessageTools::GetMessageType(aTask.get()))
         {
         case MessageType::Registered:
             std::cout << "Registered" << std::endl;
-            if (aLength < MinRegisteredSize || MaxRegisteredSize < aLength)
+            if (aLength < RawMessageTools::MinRegisteredSize || RawMessageTools::MaxRegisteredSize < aLength)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mData->Register(clientId, std::move(aTask));
+            mData->Register(clientId, std::move(aTask), aLength);
             break;
 
         case MessageType::Renamed:
             std::cout << "Renamed" << std::endl;
-            if (aLength < MinRegisteredSize || MaxRegisteredSize < aLength)
+            if (aLength < RawMessageTools::MinRegisteredSize || RawMessageTools::MaxRegisteredSize < aLength)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mData->Register(clientId, std::move(aTask));
+            mData->Register(clientId, std::move(aTask), aLength);
             break;
 
         case MessageType::DealWon:
         {
             std::cout << "DealWon: " << std::endl;
-            if (aLength != DealWonSize)
+            if (aLength != RawMessageTools::DealWonSize)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            auto amount = GetAmountOneShot(aTask.get());
+            auto amount = RawMessageTools::GetAmountOneShot(aTask.get());
             std::cout << "Amount: " << amount << std::endl;
             mData->AddDeal(clientId, amount);
         }
@@ -90,52 +76,28 @@ struct Worker : IWorker
 
         case MessageType::Connected:
             std::cout << "Connected" << std::endl;
-            if (aLength != ConnectedSize)
+            if (aLength != RawMessageTools::ConnectedSize)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mConnected.emplace(GetClientId(aTask.get()));
+            mConnected.emplace(RawMessageTools::GetClientId(aTask.get()));
             break;
 
         case MessageType::Disconnected:
             std::cout << "Disconnected" << std::endl;
-            if (aLength != ConnectedSize)
+            if (aLength != RawMessageTools::ConnectedSize)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mConnected.erase(GetClientId(aTask.get()));
+            mConnected.erase(RawMessageTools::GetClientId(aTask.get()));
             break;
 
         default:
             std::cerr << "Unknown message type." << std::endl;
             break;
         }
-    }
-
-private:
-
-    static constexpr MessageType GetMessageType(const TByte* aRaw)
-    {
-        const constexpr int offset = 1;
-        return reinterpret_cast<const MessageType*>(aRaw)[offset];
-    }
-
-    static constexpr TClientId GetClientId(const TByte* aRaw)
-    {
-        const constexpr int offset = 0;
-        return reinterpret_cast<const TClientId*>(aRaw)[offset];
-    }
-
-    // Corrupt the message.
-    static double GetAmountOneShot(TByte* aRaw)
-    {
-        const constexpr int offset = 2;
-        const constexpr int powerOffset = 7;
-        auto amountPtr = reinterpret_cast<uint64_t*>(aRaw) + offset;
-        auto power = std::pow(10, std::exchange(reinterpret_cast<TByte*>(amountPtr)[powerOffset], 0));
-        return amountPtr[0] * power;
     }
 
 private:

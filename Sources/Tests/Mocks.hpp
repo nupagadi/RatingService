@@ -89,9 +89,9 @@ struct WorkerMock : IWorker
 
 struct DataMock : IData
 {
-    MOCK_METHOD2(Register, void(TClientId aClientId, TSharedRawMessage aName));
+    MOCK_METHOD3(Register, void(TClientId aClientId, TSharedRawMessage aName, size_t aLength));
 
-    MOCK_METHOD2(Rename, void(TClientId aClientId, TSharedRawMessage aName));
+    MOCK_METHOD3(Rename, void(TClientId aClientId, TSharedRawMessage aName, size_t aLength));
 
     MOCK_METHOD2(AddDeal, void(TClientId aClientId, double aAmount));
 

@@ -12,6 +12,7 @@ set(INCLUDES
     IService.hpp
     IWorker.hpp
     Manager.hpp
+    RawMessageTools.hpp
     Service.hpp
     Types.hpp
     Worker.hpp
