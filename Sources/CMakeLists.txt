@@ -1,21 +1,23 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(INCLUDES
-    IService.hpp
-    Service.hpp
-    IAsio.hpp
     Asio.hpp
-    IManager.hpp
-    Manager.hpp
-    IFactory.hpp
     Factory.hpp
-    IWorker.hpp
-    Worker.hpp
     Handlers.hpp
+    IAsio.hpp
+    IData.hpp
+    IFactory.hpp
+    IManager.hpp
+    IService.hpp
+    IWorker.hpp
+    Manager.hpp
+    Service.hpp
+    Types.hpp
+    Worker.hpp
 )
 set(SOURCES
-    Factory.cpp
     Asio.cpp
+    Factory.cpp
     Manager.cpp
     Service.cpp
     Worker.cpp

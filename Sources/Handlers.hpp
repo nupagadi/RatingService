@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Types.hpp"
+
 namespace RatingService
 {
 
@@ -86,7 +88,7 @@ struct IWorker;
 
 template <typename ...TArgs>
 using TWorkerTask = Task<IWorker, TArgs...>;
-using TRawMessage = TWorkerTask<std::unique_ptr<uint8_t[]>, size_t>;
-using TSharedRawMessage = TWorkerTask<std::shared_ptr<uint8_t>, size_t>;
+using TRawMessageTask = TWorkerTask<TRawMessage, size_t>;
+using TSharedRawMessageTask = TWorkerTask<TSharedRawMessage, size_t>;
 
 }

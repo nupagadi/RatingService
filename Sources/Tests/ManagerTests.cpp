@@ -71,10 +71,10 @@ TEST_F(ManagerTests, ShouldTrimEOL)
     // A crutch.
     std::shared_ptr<uint8_t> sptr(raw.get(), [](uint8_t*){});
     auto w = Factory.Workers[1];
-    TSharedRawMessage task(w, std::move(sptr), 6);
+    TSharedRawMessageTask task(w, std::move(sptr), 6);
 
     EXPECT_CALL(*w, PostProxy(Pointee(Truly(
-        std::bind(&TSharedRawMessage::operator==, std::cref(task), std::placeholders::_1)))));
+        std::bind(&TSharedRawMessageTask::operator==, std::cref(task), std::placeholders::_1)))));
 
     Manager->ProcessMessageFromNet(std::move(raw), 8);
 }

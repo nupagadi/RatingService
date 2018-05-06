@@ -24,7 +24,7 @@ struct Worker : IWorker
         mAsioService->Run();
     }
 
-    void Post(TSharedRawMessage aMessage) override
+    void Post(TSharedRawMessageTask aMessage) override
     {
         mAsioService->Post(std::move(aMessage));
     }

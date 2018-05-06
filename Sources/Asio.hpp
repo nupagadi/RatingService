@@ -1,4 +1,5 @@
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
 
 #include "IWorker.hpp"
 #include "IAsio.hpp"
@@ -17,13 +18,14 @@ struct AsioService : IAsioService
         assert(mIoService.stopped());
     }
 
-    void Post(TSharedRawMessage aMessage) override
+    void Post(TSharedRawMessageTask aMessage) override
     {
         mIoService.post(std::move(aMessage));
     }
 
     void Stop(bool aForce) override
     {
+        mWork = boost::none;
         if (aForce)
         {
             mIoService.stop();
@@ -34,6 +36,7 @@ struct AsioService : IAsioService
 private:
 
     boost::asio::io_service mIoService;
+    boost::optional<boost::asio::io_service::work> mWork{mIoService};
 };
 
 struct AsioSocket : IAsioSocket

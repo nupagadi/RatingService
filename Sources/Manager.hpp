@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "IFactory.hpp"
+#include "IData.hpp"
 #include "IManager.hpp"
 #include "IService.hpp"
 
@@ -13,7 +14,8 @@ struct Manager : IManager
 {
     Manager(IFactory* aFactory)
         : mService(aFactory->MakeSharedService(this))
-        , mWorkers(aFactory->MakeWorkers(aFactory, this))
+        , mData(aFactory->MakeData())
+        , mWorkers(aFactory->MakeWorkers(aFactory, this, mData))
     {
     }
 
@@ -41,7 +43,7 @@ struct Manager : IManager
             aLength -= 2;
         }
         // TODO: Pass shared_ptr from Worker.
-        w->Post(TSharedRawMessage{
+        w->Post(TSharedRawMessageTask{
             w.get(),
             std::shared_ptr<uint8_t>(aMessage.release(), std::default_delete<uint8_t[]>()),
             aLength});
@@ -57,6 +59,7 @@ private:
 private:
 
     std::shared_ptr<IService> mService;
+    std::unique_ptr<IData> mData;
     const std::vector<std::unique_ptr<IWorker>> mWorkers;
 };
 

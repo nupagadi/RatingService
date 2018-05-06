@@ -48,6 +48,11 @@ struct Factory : IFactory
         return RatingService::MakeAsioAcceptor(aAsioService, aPort);
     }
 
+    std::unique_ptr<IData> MakeData() override
+    {
+        return RatingService::MakeData();
+    }
+
 private:
 
     short mAcceptorPort;
