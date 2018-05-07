@@ -39,6 +39,11 @@ struct Factory : IFactory
         return RatingService::MakeAsioSocket(aAsioService);
     }
 
+    std::unique_ptr<IAsioTimer> MakeAsioTimer(IAsioService* aAsioService) override
+    {
+        return RatingService::MakeAsioTimer(aAsioService);
+    }
+
     std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort) override
     {
         return RatingService::MakeAsioAcceptor(aAsioService, aPort);

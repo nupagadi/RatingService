@@ -40,66 +40,28 @@ struct Service : std::enable_shared_from_this<Service>, IService
         assert(mAcceptor);
         assert(mSocket);
         assert(mManager);
+        mTimers.reserve(2);
     }
 
-    boost::asio::io_service AnotherService;
-    boost::asio::system_timer Timer{AnotherService};
-    boost::asio::system_timer Timer2{AnotherService};
-    std::chrono::system_clock Clock;
-
-    void OnTimer(const boost::system::error_code& aErrorCode, size_t period, boost::asio::system_timer& timer)
+    void OnTimer(const boost::system::error_code& aErrorCode, size_t aPeriod, size_t aId, IAsioTimer& aTimer)
     {
         if (aErrorCode)
         {
-            std::cout << aErrorCode << std::endl;
+            std::cout << "Service::OnTimer: " << aErrorCode << std::endl;
             return;
         }
-        auto now = timer.expires_at();
-        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-        std::cout << "Timer: " << period << ", " << seconds % period - period / 7 * 4 << std::endl;
-        timer.expires_at(now + std::chrono::seconds(period));
-        timer.async_wait(std::bind(&Service::OnTimer, this, std::placeholders::_1, period, std::ref(timer)));
+
+        aTimer.ExpiresAt(aTimer.ExpiresAt() + std::chrono::seconds(aPeriod));
+        aTimer.Wait(
+            std::bind(&Service::OnTimer, shared_from_this(), std::placeholders::_1, aPeriod, aId, std::ref(aTimer)));
+
+        mManager->ProcessNotify(aId);
     }
 
-    void Run()
+    void Run() override
     {
         mAcceptCallback.SetCallee(shared_from_this());
         mReadCallback.SetCallee(shared_from_this());
-
-        auto now = std::chrono::duration_cast<std::chrono::seconds>(Clock.now().time_since_epoch()).count();
-        now /= 3;
-        now *= 3;
-        now += 3;
-        auto next = std::chrono::seconds(now);
-
-        Timer.expires_at(std::chrono::system_clock::time_point{next});
-        Timer.async_wait(std::bind(&Service::OnTimer, this, std::placeholders::_1, 3, std::ref(Timer)));
-
-        auto now2 = now;
-        auto day = 60 * 60 * 24;
-        now /= day * 7;
-        now *= day * 7;
-        now += day * 4;
-        if (now < now2)
-        {
-            now += day * 7;
-            std::cout << "+7" << std::endl;
-        }
-
-//        now /= 30;
-//        now *= 30;
-//        now += 30;
-
-        next = std::chrono::seconds(now);
-
-        Timer2.expires_at(std::chrono::system_clock::time_point{next});
-        Timer2.async_wait(std::bind(&Service::OnTimer, this, std::placeholders::_1, day * 7, std::ref(Timer2)));
-
-
-        std::thread t{[&service = AnotherService]{ service.run(); }};
-
-        // TODO: Set signals.
-        // TODO: Set timers.
 
         Accept();
 
@@ -107,7 +69,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
     }
 
     // TODO: Implement?
-    void Stop(bool aForce)
+    void Stop(bool aForce) override
     {
         mService->Stop(aForce);
     }
@@ -175,11 +137,23 @@ struct Service : std::enable_shared_from_this<Service>, IService
         }
     }
 
-    boost::optional<size_t> Notify(size_t aTimePointEpochSec, size_t aRepeatSec) override
+    size_t Notify(size_t aTimePointEpochSec, size_t aRepeatSec) override
     {
-        (void)aTimePointEpochSec;
-        (void)aRepeatSec;
-        return {};
+        static size_t id = 1;
+
+        mTimers.emplace_back(mFactory->MakeAsioTimer(mService.get()));
+
+        mTimers.back()->ExpiresAt(std::chrono::system_clock::time_point(std::chrono::seconds(aTimePointEpochSec)));
+
+        mTimers.back()->Wait(std::bind(
+            &Service::OnTimer,
+            shared_from_this(),
+            std::placeholders::_1,
+            aRepeatSec,
+            id,
+            std::ref(*mTimers.back())));
+
+        return id++;
     }
 
 private:
@@ -207,6 +181,8 @@ private:
     std::unique_ptr<IAsioService> mService;
     std::unique_ptr<IAsioAcceptor> mAcceptor;
     std::unique_ptr<IAsioSocket> mSocket;
+    std::vector<std::unique_ptr<IAsioTimer>> mTimers;
+
     IManager* mManager;
 
     IAsioAcceptor::TAcceptCallback mAcceptCallback;

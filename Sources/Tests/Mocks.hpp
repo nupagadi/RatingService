@@ -45,6 +45,15 @@ struct AsioSocketMock : IAsioSocket
      MOCK_METHOD0(Close, void());
 };
 
+struct AsioTimerMock : IAsioTimer
+{
+    MOCK_CONST_METHOD0(ExpiresAt, std::chrono::system_clock::time_point());
+
+    MOCK_METHOD1(ExpiresAt, void(const std::chrono::system_clock::time_point& aTimePoint));
+
+    MOCK_METHOD1(Wait, void(const std::function<void(const boost::system::error_code&)>& aCallback));
+};
+
 struct ManagerMock : IManager
 {
     MOCK_METHOD0(Run, void());
@@ -69,7 +78,7 @@ struct ServiceMock : IService
 
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
 
-    MOCK_METHOD2(Notify, boost::optional<size_t>(size_t aTimePointEpochSec, size_t aRepeatSec));
+    MOCK_METHOD2(Notify, size_t(size_t aTimePointEpochSec, size_t aRepeatSec));
 };
 
 struct WorkerMock : IWorker
@@ -114,6 +123,7 @@ struct MockFactory : IFactory
     AsioServiceMock* AsioService {};
     AsioSocketMock* AsioSocket {};
     AsioAcceptorMock* AsioAcceptor {};
+    AsioTimerMock* AsioTimer {};
 
     short Port;
     size_t ThreadsCount;
@@ -191,6 +201,13 @@ public:
     {
         auto temp = MakeMock<StrictMock<AsioAcceptorMock>>();
         AsioAcceptor = temp.get();
+        return std::move(temp);
+    }
+
+    std::unique_ptr<IAsioTimer> MakeAsioTimer(IAsioService* /*aAsioService*/) override
+    {
+        auto temp = MakeMock<StrictMock<AsioTimerMock>>();
+        AsioTimer = temp.get();
         return std::move(temp);
     }
 };

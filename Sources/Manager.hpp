@@ -86,14 +86,8 @@ private:
 
         std::cout << "Timers: " << mPreviousMonday + TradingPeriodSec << ", " << SendingIntervalSec << std::endl;
 
-        auto tradingPeriodTimerId = mService->Notify(mPreviousMonday + TradingPeriodSec, TradingPeriodSec);
-        auto sendingTimerId = mService->Notify(tp, SendingIntervalSec);
-        if (!tradingPeriodTimerId || !sendingTimerId)
-        {
-            throw std::runtime_error("Cannot setup a timer.");
-        }
-        mTradingPeriodTimerId = *tradingPeriodTimerId;
-        mSendingTimerId = *sendingTimerId;
+        mTradingPeriodTimerId = mService->Notify(mPreviousMonday + TradingPeriodSec, TradingPeriodSec);
+        mSendingTimerId = mService->Notify(tp, SendingIntervalSec);
     }
 
     size_t WorkerId(const uint8_t* aMessage)

@@ -28,6 +28,8 @@ struct IFactory
 
     virtual std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort) = 0;
 
+    virtual std::unique_ptr<IAsioTimer> MakeAsioTimer(IAsioService* aAsioService) = 0;
+
     virtual std::unique_ptr<IData> MakeData() = 0;
 };
 

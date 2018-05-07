@@ -1,5 +1,6 @@
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
+#include <boost/asio/system_timer.hpp>
 
 #include "IWorker.hpp"
 #include "IAsio.hpp"
@@ -9,6 +10,7 @@ namespace RatingService
 
 struct AsioService : IAsioService
 {
+    friend class AsioTimer;
     friend class AsioSocket;
     friend class AsioAcceptor;
 
@@ -90,6 +92,33 @@ private:
     boost::asio::ip::tcp::acceptor mAcceptor;
 };
 
+struct AsioTimer : IAsioTimer
+{
+    AsioTimer(AsioService* aService)
+        : mTimer((assert(aService), aService->mIoService))
+    {
+    }
+
+    std::chrono::system_clock::time_point ExpiresAt() const override
+    {
+        return mTimer.expires_at();
+    }
+
+    void ExpiresAt(const std::chrono::system_clock::time_point& aTimePoint) override
+    {
+        mTimer.expires_at(aTimePoint);
+    }
+
+    void Wait(const std::function<void(const boost::system::error_code&)>& aCallback) override
+    {
+        mTimer.async_wait(aCallback);
+    }
+
+private:
+
+    boost::asio::system_timer mTimer;
+};
+
 std::unique_ptr<IAsioService> MakeAsioService()
 {
     return std::make_unique<AsioService>();
@@ -98,6 +127,11 @@ std::unique_ptr<IAsioService> MakeAsioService()
 std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService)
 {
     return std::make_unique<AsioSocket>(dynamic_cast<AsioService*>(aAsioService));
+}
+
+std::unique_ptr<IAsioTimer> MakeAsioTimer(IAsioService* aAsioService)
+{
+    return std::make_unique<AsioTimer>(dynamic_cast<AsioService*>(aAsioService));
 }
 
 std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <chrono>
 #include <boost/system/error_code.hpp>
 
 #include "Handlers.hpp"
@@ -46,10 +47,23 @@ struct IAsioAcceptor
     virtual void Accept(IAsioSocket* aSocket, TAcceptCallback aCallback) = 0;
 };
 
+struct IAsioTimer
+{
+    virtual ~IAsioTimer() = default;
+
+    virtual std::chrono::system_clock::time_point ExpiresAt() const = 0;
+
+    virtual void ExpiresAt(const std::chrono::system_clock::time_point& aTimePoint) = 0;
+
+    virtual void Wait(const std::function<void(const boost::system::error_code&)>& aCallback) = 0;
+};
+
 std::unique_ptr<IAsioService> MakeAsioService();
 
 std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService);
 
 std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort);
+
+std::unique_ptr<IAsioTimer> MakeAsioTimer(IAsioService* aAsioService);
 
 }
