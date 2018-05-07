@@ -15,7 +15,15 @@ struct IWorker
 
     virtual void Post(TSharedRawMessageTask) = 0;
 
+    virtual void Post(TWaitTask) = 0;
+
+    virtual void Post(TDropDataTask) = 0;
+
     virtual void Process(TSharedRawMessage aTask, size_t aLength) = 0;
+
+    virtual void Process(std::shared_future<void> aFuture) = 0;
+
+    virtual void Process(TaskType) = 0;
 };
 
 struct IData;

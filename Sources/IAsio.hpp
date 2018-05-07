@@ -20,6 +20,10 @@ struct IAsioService
 
     virtual void Post(TSharedRawMessageTask) = 0;
 
+    virtual void Post(TWaitTask) = 0;
+
+    virtual void Post(TDropDataTask) = 0;
+
     // TODO: Ok?
     virtual void Stop(bool aForce) = 0;
 };

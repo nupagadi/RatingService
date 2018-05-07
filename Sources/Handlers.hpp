@@ -1,5 +1,7 @@
 #pragma once
 
+#include <future>
+
 #include "Types.hpp"
 
 namespace RatingService
@@ -86,9 +88,17 @@ private:
 
 struct IWorker;
 
+enum class TaskType
+{
+    DropData,
+};
+
 template <typename ...TArgs>
 using TWorkerTask = Task<IWorker, TArgs...>;
+
 using TRawMessageTask = TWorkerTask<TRawMessage, size_t>;
 using TSharedRawMessageTask = TWorkerTask<TSharedRawMessage, size_t>;
+using TWaitTask = TWorkerTask<std::shared_future<void>>;
+using TDropDataTask = TWorkerTask<TaskType>;
 
 }

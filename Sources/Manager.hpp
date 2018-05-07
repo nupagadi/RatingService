@@ -65,6 +65,14 @@ struct Manager : IManager
     void ProcessNotify(size_t aTimerId) override
     {
         std::cout << "ProcessNotify: " << aTimerId << std::endl;
+
+        if (aTimerId == mTradingPeriodTimerId)
+        {
+            for (auto& w : mWorkers)
+            {
+                w->Post(TDropDataTask{w.get(), TaskType::DropData});
+            }
+        }
     }
 
     void Lock(size_t aId) override
@@ -78,6 +86,27 @@ struct Manager : IManager
     }
 
 private:
+
+//    void DropData()
+//    {
+//        std::promise<void> promise;
+//        std::shared_future<void> future(promise.get_future());
+
+//        for (auto& w : mWorkers)
+//        {
+//            w->Post(TWaitTask{w.get(), future});
+//        }
+
+//        for (auto& m : mMutexes)
+//        {
+//            m.lock();
+//        }
+
+//        for (auto& w : mWorkers)
+//        {
+//            mData->Drop(w.Id);
+//        }
+//    }
 
     void SetupTimers()
     {

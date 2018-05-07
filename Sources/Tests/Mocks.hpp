@@ -30,6 +30,10 @@ struct AsioServiceMock : IAsioService
 
     MOCK_METHOD1(Post, void(TSharedRawMessageTask));
 
+    MOCK_METHOD1(Post, void(TWaitTask));
+
+    MOCK_METHOD1(Post, void(TDropDataTask));
+
     MOCK_METHOD1(Stop, void(bool aForce));
 };
 
@@ -92,6 +96,14 @@ struct WorkerMock : IWorker
     MOCK_METHOD1(PostProxy, void(TSharedRawMessageTask*));
 
     MOCK_METHOD2(ProcessProxy, void(uint8_t* aTask, size_t aLength));
+
+    MOCK_METHOD1(Post, void(TWaitTask));
+
+    MOCK_METHOD1(Process, void(std::shared_future<void> aFuture));
+
+    MOCK_METHOD1(Post, void(TDropDataTask));
+
+    MOCK_METHOD1(Process, void(TaskType aTask));
 
     void Post(TSharedRawMessageTask aTask) override
     {

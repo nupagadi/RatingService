@@ -40,6 +40,16 @@ struct Worker : IWorker
         mAsioService->Post(std::move(aMessage));
     }
 
+    void Post(TWaitTask aMessage) override
+    {
+        mAsioService->Post(std::move(aMessage));
+    }
+
+    void Post(TDropDataTask aMessage) override
+    {
+        mAsioService->Post(std::move(aMessage));
+    }
+
     void Process(TSharedRawMessage aTask, size_t aLength) override
     {
         auto clientId = RawMessageTools::GetClientId(aTask.get());
@@ -105,6 +115,16 @@ struct Worker : IWorker
             std::cerr << "Unknown message type." << std::endl;
             break;
         }
+    }
+
+    void Process(std::shared_future<void> aFuture) override
+    {
+        (void)aFuture;
+    }
+
+    void Process(TaskType aTask) override
+    {
+        (void)aTask;
     }
 
 private:
