@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <thread>
+#include <mutex>
 
 #include "IFactory.hpp"
 #include "IData.hpp"
@@ -18,11 +19,14 @@ struct Manager : IManager
     static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
     static const constexpr size_t SomeMondaySec = 1525046400;
 
+    std::vector<std::mutex> Mutexes;
+
     Manager(IFactory* aFactory)
         : mService(aFactory->MakeSharedService(this))
         , mData(aFactory->MakeData())
         , mWorkers(aFactory->MakeWorkers(aFactory, this, mData.get()))
     {
+        Mutexes = decltype(Mutexes)(mWorkers.size());
     }
 
     void Run() override

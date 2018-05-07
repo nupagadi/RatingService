@@ -12,8 +12,11 @@ namespace RatingService
 
 struct Worker : IWorker
 {
-    Worker(IFactory* aFactory, IManager* aManager, IData* aData)
-        : mFactory((assert(aFactory), aFactory))
+    const size_t Id;
+
+    Worker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId)
+        : Id(aId)
+        , mFactory((assert(aFactory), aFactory))
         , mManager(aManager)
         , mData(aData)
         , mAsioService(aFactory->MakeAsioService())
@@ -110,13 +113,13 @@ private:
     std::unordered_set<TClientId> mConnected;
 };
 
-std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager *aManager, IData* aData)
+std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId)
 {
     assert(aFactory);
     assert(aManager);
     assert(aData);
 
-    return std::make_unique<Worker>(aFactory, aManager, aData);
+    return std::make_unique<Worker>(aFactory, aManager, aData, aId);
 }
 
 std::vector<std::unique_ptr<IWorker>> MakeWorkers(
@@ -129,7 +132,7 @@ std::vector<std::unique_ptr<IWorker>> MakeWorkers(
     std::vector<std::unique_ptr<IWorker>> result;
     for (size_t i = 0; i < aThreadsCount; ++i)
     {
-        result.push_back(MakeWorker(aFactory, aManager, aData));
+        result.push_back(MakeWorker(aFactory, aManager, aData, i));
     }
     return result;
 }

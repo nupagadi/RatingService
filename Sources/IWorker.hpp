@@ -22,7 +22,7 @@ struct IData;
 struct IFactory;
 struct IManager;
 
-std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager *aManager, IData* aData);
+std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId);
 
 std::vector<std::unique_ptr<IWorker>> MakeWorkers(
     IFactory* aFactory, IManager* aManager, IData* aData, size_t aThreadsCount);
