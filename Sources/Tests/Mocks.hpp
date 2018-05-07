@@ -66,6 +66,8 @@ struct ServiceMock : IService
     MOCK_METHOD1(OnAccept, void(const boost::system::error_code& aErrorCode));
 
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
+
+    MOCK_METHOD2(Notify, boost::optional<TTimerId>(size_t aTimePointEpochSec, size_t aRepeatSec));
 };
 
 struct WorkerMock : IWorker
