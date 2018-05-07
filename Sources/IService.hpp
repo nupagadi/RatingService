@@ -12,8 +12,6 @@ struct IFactory;
 
 struct IService
 {
-    using TTimerId = size_t;
-
     virtual ~IService() = default;
 
     // TODO: Use Poll instead.
@@ -26,7 +24,7 @@ struct IService
 
     virtual void OnReceive(const boost::system::error_code& aErrorCode, const size_t& aLength) = 0;
 
-    virtual boost::optional<TTimerId> Notify(size_t aTimePointEpochSec, size_t aRepeatSec) = 0;
+    virtual boost::optional<size_t> Notify(size_t aTimePointEpochSec, size_t aRepeatSec) = 0;
 };
 
 std::shared_ptr<IService> MakeSharedService(IFactory *aFactory, IManager *aManager, short aAcceptorPort);

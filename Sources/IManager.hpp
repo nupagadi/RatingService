@@ -13,6 +13,8 @@ struct IManager
     virtual void Run() = 0;
 
     virtual void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) = 0;
+
+    virtual void ProcessNotify(size_t aTimerId) = 0;
 };
 
 struct IFactory;

@@ -13,6 +13,11 @@ namespace RatingService
 
 struct Manager : IManager
 {
+    // TODO: Move to some config?
+    static const constexpr size_t SendingIntervalSec = 3;
+    static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
+    static const constexpr size_t SomeMondaySec = 1525046400;
+
     Manager(IFactory* aFactory)
         : mService(aFactory->MakeSharedService(this))
         , mData(aFactory->MakeData())
@@ -27,6 +32,8 @@ struct Manager : IManager
         {
             threads.emplace_back([&e]{ e->Run(); });
         }
+
+        SetupTimers();
 
         mService->Run();
 
@@ -53,7 +60,41 @@ struct Manager : IManager
             aLength});
     }
 
+    void ProcessNotify(size_t aTimerId) override
+    {
+        std::cout << "ProcessNotify: " << aTimerId << std::endl;
+    }
+
 private:
+
+    void SetupTimers()
+    {
+        auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
+        assert(now > SomeMondaySec);
+
+        auto tp = now;
+        tp -= SomeMondaySec;
+        tp /= TradingPeriodSec;
+        tp *= TradingPeriodSec;
+        tp += SomeMondaySec;
+        mPreviousMonday = tp;
+
+        tp = now;
+        tp /= SendingIntervalSec;
+        tp *= SendingIntervalSec;
+        tp += SendingIntervalSec;
+
+        std::cout << "Timers: " << mPreviousMonday + TradingPeriodSec << ", " << SendingIntervalSec << std::endl;
+
+        auto tradingPeriodTimerId = mService->Notify(mPreviousMonday + TradingPeriodSec, TradingPeriodSec);
+        auto sendingTimerId = mService->Notify(tp, SendingIntervalSec);
+        if (!tradingPeriodTimerId || !sendingTimerId)
+        {
+            throw std::runtime_error("Cannot setup a timer.");
+        }
+        mTradingPeriodTimerId = *tradingPeriodTimerId;
+        mSendingTimerId = *sendingTimerId;
+    }
 
     size_t WorkerId(const uint8_t* aMessage)
     {
@@ -61,6 +102,10 @@ private:
     }
 
 private:
+
+    size_t mPreviousMonday {};
+    std::chrono::system_clock mClock;
+    size_t mTradingPeriodTimerId = -1, mSendingTimerId = -1;
 
     std::shared_ptr<IService> mService;
     std::unique_ptr<IData> mData;

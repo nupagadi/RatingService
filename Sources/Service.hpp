@@ -175,7 +175,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
         }
     }
 
-    boost::optional<TTimerId> Notify(size_t aTimePointEpochSec, size_t aRepeatSec) override
+    boost::optional<size_t> Notify(size_t aTimePointEpochSec, size_t aRepeatSec) override
     {
         (void)aTimePointEpochSec;
         (void)aRepeatSec;
