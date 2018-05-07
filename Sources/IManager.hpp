@@ -14,7 +14,7 @@ struct IManager
 
     virtual void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) = 0;
 
-    virtual void ProcessNotify(size_t aTimerId) = 0;
+    virtual void ProcessNotify(size_t aTimerId, size_t aNow) = 0;
 
     virtual void Lock(size_t aId) = 0;
 

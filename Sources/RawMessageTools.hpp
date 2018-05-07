@@ -37,6 +37,12 @@ struct RawMessageTools
         return reinterpret_cast<const TClientId*>(aRaw)[offset];
     }
 
+    static constexpr TTime GetTime(const TByte* aRaw)
+    {
+        const constexpr int offset = 1;
+        return reinterpret_cast<const TTime*>(aRaw)[offset];
+    }
+
     // Corrupt the message.
     static double GetAmountOneShot(TByte* aRaw)
     {

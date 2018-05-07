@@ -69,7 +69,7 @@ struct ManagerMock : IManager
 
     MOCK_METHOD2(ProcessMessageFromNetProxy, void(uint8_t* aMessage, size_t aLength));
 
-    MOCK_METHOD1(ProcessNotify, void(size_t aTimerId));
+    MOCK_METHOD2(ProcessNotify, void(size_t aTimerId, size_t aNow));
 
     MOCK_METHOD1(Lock, void(size_t aId));
 
@@ -103,7 +103,7 @@ struct WorkerMock : IWorker
 
     MOCK_METHOD1(Post, void(TDropDataTask));
 
-    MOCK_METHOD1(Process, void(TaskType aTask));
+    MOCK_METHOD1(Process, void(std::chrono::seconds aNewMonday));
 
     void Post(TSharedRawMessageTask aTask) override
     {

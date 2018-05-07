@@ -74,7 +74,7 @@ struct Worker : IWorker
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mData->Register(clientId, std::move(aTask), aLength);
+            mData->Rename(clientId, std::move(aTask), aLength);
             break;
 
         case MessageType::DealWon:
@@ -83,6 +83,11 @@ struct Worker : IWorker
             if (aLength != RawMessageTools::DealWonSize)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
+                break;
+            }
+            if (RawMessageTools::GetTime(aTask.get()) < mTradingPeriodStartUs)
+            {
+                std::cout << "Invalid time:" << std::endl;
                 break;
             }
             auto amount = RawMessageTools::GetAmountOneShot(aTask.get());
@@ -122,9 +127,10 @@ struct Worker : IWorker
         (void)aFuture;
     }
 
-    void Process(TaskType aTask) override
+    void Process(std::chrono::seconds aNewMondaySec) override
     {
-        (void)aTask;
+        mTradingPeriodStartUs = aNewMondaySec.count() * 1000 * 1000;
+        mData->Drop(Id);
     }
 
 private:
@@ -134,7 +140,10 @@ private:
     IData* mData;
     std::unique_ptr<IAsioService> mAsioService;
 
+    // TODO: Different connected ctners.
     std::unordered_set<TClientId> mConnected;
+
+    TTime mTradingPeriodStartUs {};
 };
 
 std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId)

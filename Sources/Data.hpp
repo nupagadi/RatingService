@@ -15,14 +15,15 @@ struct Data : IData
 {
     Data(size_t aThreadsCount)
         : mThreadsCount(aThreadsCount)
+        , mEntries(mThreadsCount)
     {
+        mClientIdToPosition.reserve(1000'000);
     }
 
     void Register(TClientId aClientId, TSharedRawMessage aName, size_t aLength) override
     {
         auto& workerEntries = mEntries[aClientId % mThreadsCount];
         auto emplaceResult = mClientIdToPosition.emplace(aClientId, workerEntries.size());
-        assert(emplaceResult.second);
         if (!emplaceResult.second)
         {
             std::cerr << "Data::Register" << "Already registered: " << aClientId << std::endl;
@@ -69,7 +70,6 @@ struct Data : IData
         return std::move(result);
     }
 
-    // TODO: Drop signals to all Workers.
     void Drop(size_t aWorkerId) override
     {
         assert(aWorkerId < mEntries.size());

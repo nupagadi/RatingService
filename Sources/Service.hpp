@@ -51,11 +51,12 @@ struct Service : std::enable_shared_from_this<Service>, IService
             return;
         }
 
-        aTimer.ExpiresAt(aTimer.ExpiresAt() + std::chrono::seconds(aPeriod));
+        auto now = aTimer.ExpiresAt();
+        aTimer.ExpiresAt(now + std::chrono::seconds(aPeriod));
         aTimer.Wait(
             std::bind(&Service::OnTimer, shared_from_this(), std::placeholders::_1, aPeriod, aId, std::ref(aTimer)));
 
-        mManager->ProcessNotify(aId);
+        mManager->ProcessNotify(aId, std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count());
     }
 
     void Run() override

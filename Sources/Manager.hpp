@@ -16,6 +16,7 @@ struct Manager : IManager
 {
     // TODO: Move to some config?
     static const constexpr size_t SendingIntervalSec = 3;
+    static const constexpr size_t SpecificClientSendingIntervalSec = 60;
     static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
     static const constexpr size_t SomeMondaySec = 1525046400;
 
@@ -62,16 +63,18 @@ struct Manager : IManager
             aLength});
     }
 
-    void ProcessNotify(size_t aTimerId) override
+    void ProcessNotify(size_t aTimerId, size_t aNow) override
     {
         std::cout << "ProcessNotify: " << aTimerId << std::endl;
 
         if (aTimerId == mTradingPeriodTimerId)
         {
+            assert((aNow - SomeMondaySec) % TradingPeriodSec == 0);
             for (auto& w : mWorkers)
             {
-                w->Post(TDropDataTask{w.get(), TaskType::DropData});
+                w->Post(TDropDataTask{w.get(), std::chrono::seconds{aNow}});
             }
+            mTradingPeriodStart = aNow;
         }
     }
 
@@ -118,17 +121,19 @@ private:
         tp /= TradingPeriodSec;
         tp *= TradingPeriodSec;
         tp += SomeMondaySec;
-        mPreviousMonday = tp;
+        mTradingPeriodStart = tp;
 
         tp = now;
         tp /= SendingIntervalSec;
         tp *= SendingIntervalSec;
         tp += SendingIntervalSec;
 
-        std::cout << "Timers: " << mPreviousMonday + TradingPeriodSec << ", " << SendingIntervalSec << std::endl;
+        std::cout << "Timers: " << mTradingPeriodStart + TradingPeriodSec << ", " << SendingIntervalSec << std::endl;
 
-        mTradingPeriodTimerId = mService->Notify(mPreviousMonday + TradingPeriodSec, TradingPeriodSec);
+        mTradingPeriodTimerId = mService->Notify(mTradingPeriodStart + TradingPeriodSec, TradingPeriodSec);
         mSendingTimerId = mService->Notify(tp, SendingIntervalSec);
+
+        ProcessNotify(mTradingPeriodTimerId, mTradingPeriodStart);
     }
 
     size_t WorkerId(const uint8_t* aMessage)
@@ -138,7 +143,7 @@ private:
 
 private:
 
-    size_t mPreviousMonday {};
+    size_t mTradingPeriodStart {};
     std::chrono::system_clock mClock;
     size_t mTradingPeriodTimerId = -1, mSendingTimerId = -1;
 

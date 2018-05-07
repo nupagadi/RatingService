@@ -23,7 +23,7 @@ struct IWorker
 
     virtual void Process(std::shared_future<void> aFuture) = 0;
 
-    virtual void Process(TaskType) = 0;
+    virtual void Process(std::chrono::seconds aNewMonday) = 0;
 };
 
 struct IData;
