@@ -19,14 +19,12 @@ struct Manager : IManager
     static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
     static const constexpr size_t SomeMondaySec = 1525046400;
 
-    std::vector<std::mutex> Mutexes;
-
     Manager(IFactory* aFactory)
         : mService(aFactory->MakeSharedService(this))
         , mData(aFactory->MakeData())
         , mWorkers(aFactory->MakeWorkers(aFactory, this, mData.get()))
+        , mMutexes(mWorkers.size())
     {
-        Mutexes = decltype(Mutexes)(mWorkers.size());
     }
 
     void Run() override
@@ -69,6 +67,16 @@ struct Manager : IManager
         std::cout << "ProcessNotify: " << aTimerId << std::endl;
     }
 
+    void Lock(size_t aId) override
+    {
+        mMutexes[aId].lock();
+    }
+
+    void Unlock(size_t aId) override
+    {
+        mMutexes[aId].unlock();
+    }
+
 private:
 
     void SetupTimers()
@@ -108,6 +116,8 @@ private:
     std::shared_ptr<IService> mService;
     std::unique_ptr<IData> mData;
     const std::vector<std::unique_ptr<IWorker>> mWorkers;
+
+    std::vector<std::mutex> mMutexes;
 };
 
 std::unique_ptr<IManager> MakeManager(IFactory* aFactory)

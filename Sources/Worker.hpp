@@ -28,7 +28,11 @@ struct Worker : IWorker
 
     void Run() override
     {
+        mManager->Lock(Id);
+
         mAsioService->Run();
+
+        mManager->Unlock(Id);
     }
 
     void Post(TSharedRawMessageTask aMessage) override

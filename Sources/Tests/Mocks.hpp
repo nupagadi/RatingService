@@ -66,6 +66,10 @@ struct ManagerMock : IManager
     MOCK_METHOD2(ProcessMessageFromNetProxy, void(uint8_t* aMessage, size_t aLength));
 
     MOCK_METHOD1(ProcessNotify, void(size_t aTimerId));
+
+    MOCK_METHOD1(Lock, void(size_t aId));
+
+    MOCK_METHOD1(Unlock, void(size_t aId));
 };
 
 struct ServiceMock : IService
