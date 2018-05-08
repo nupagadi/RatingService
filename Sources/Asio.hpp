@@ -35,6 +35,11 @@ struct AsioService : IAsioService
         mIoService.post(std::move(aMessage));
     }
 
+    void Post(TConnectedTask aMessage) override
+    {
+        mIoService.post(std::move(aMessage));
+    }
+
     void Stop(bool aForce) override
     {
         mWork = boost::none;

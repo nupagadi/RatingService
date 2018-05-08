@@ -74,12 +74,20 @@ struct Manager : IManager
 
     void Lock(size_t aId) override
     {
+        assert(aId < mMutexes.size());
         mMutexes[aId].lock();
     }
 
     void Unlock(size_t aId) override
     {
+        assert(aId < mMutexes.size());
         mMutexes[aId].unlock();
+    }
+
+    IWorker* GetWorker(size_t aWorkerId) override
+    {
+        assert(aWorkerId < mWorkers.size());
+        return mWorkers[aWorkerId].get();
     }
 
 private:

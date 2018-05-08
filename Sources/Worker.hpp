@@ -79,6 +79,11 @@ struct Worker : IWorker
         mAsioService->Post(std::move(aMessage));
     }
 
+    void Post(TConnectedTask aMessage) override
+    {
+        mAsioService->Post(std::move(aMessage));
+    }
+
     void Process(TSharedRawMessage aTask, size_t aLength) override
     {
         auto clientId = RawMessageTools::GetClientId(aTask.get());
@@ -171,6 +176,19 @@ struct Worker : IWorker
         mData->Drop(Id);
     }
 
+    void Process(TConnected aType, TClientId aClientId) override
+    {
+        // TODO: Send this from somewhere.
+        if (aType == TConnected::JustConnected)
+        {
+            mForeigners.push_back(aClientId);
+        }
+        else if (aType == TConnected::SendBack)
+        {
+            PutConnected(aClientId);
+        }
+    }
+
 private:
 
     void ProcessConnected(TClientId aClientId)
@@ -179,16 +197,21 @@ private:
         auto workerId = NearestWorkerId(now, ThreadsCount);
         if (workerId == Id)
         {
-            auto emplaced = mConnected[LocalConnectedContainersId(aClientId, Id)].emplace(aClientId);
-            if (!emplaced.second)
-            {
-                std::cout << "Worker::ProcessConnected: " << "Already exists: " << aClientId << std::endl;
-            }
+            PutConnected(aClientId);
         }
         else
         {
-//            auto worker = mManager->GetWorker(workerId);
-//            worker->Post(TConnectedTask{worker, TConnected::SendInfo, aClientId});
+            auto worker = mManager->GetWorker(workerId);
+            worker->Post(TConnectedTask{worker, TConnected::JustConnected, aClientId});
+        }
+    }
+
+    void PutConnected(TClientId aClientId)
+    {
+        auto emplaced = mConnected[LocalConnectedContainersId(aClientId, Id)].emplace(aClientId);
+        if (!emplaced.second)
+        {
+            std::cout << "Worker::ProcessConnected: " << "Already exists: " << aClientId << std::endl;
         }
     }
 
@@ -200,6 +223,7 @@ private:
     std::unique_ptr<IAsioService> mAsioService;
 
     std::vector<std::unordered_set<TClientId>> mConnected;
+    std::vector<TClientId> mForeigners;
 
     TTime mTradingPeriodStartUs {};
 

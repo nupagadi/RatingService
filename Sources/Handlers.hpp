@@ -96,4 +96,12 @@ using TSharedRawMessageTask = TWorkerTask<TSharedRawMessage, size_t>;
 using TWaitTask = TWorkerTask<std::shared_future<void>>;
 using TDropDataTask = TWorkerTask<std::chrono::seconds>;
 
+enum class TConnected
+{
+    JustConnected,
+    SendBack,
+};
+
+using TConnectedTask = TWorkerTask<TConnected, TClientId>;
+
 }

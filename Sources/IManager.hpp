@@ -5,6 +5,8 @@
 namespace RatingService
 {
 
+struct IWorker;
+
 struct IManager
 {
     virtual ~IManager() = default;
@@ -19,6 +21,8 @@ struct IManager
     virtual void Lock(size_t aId) = 0;
 
     virtual void Unlock(size_t aId) = 0;
+
+    virtual IWorker* GetWorker(size_t aWorkerId) = 0;
 };
 
 struct IFactory;
