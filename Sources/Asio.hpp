@@ -30,6 +30,11 @@ struct AsioService : IAsioService
         mIoService.post(std::move(aMessage));
     }
 
+    void Post(TSendInfoTask aMessage) override
+    {
+        mIoService.post(std::move(aMessage));
+    }
+
     void Post(TDropDataTask aMessage) override
     {
         mIoService.post(std::move(aMessage));

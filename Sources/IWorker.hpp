@@ -15,19 +15,23 @@ struct IWorker
 
     virtual void Post(TSharedRawMessageTask) = 0;
 
-    virtual void Post(TWaitTask) = 0;
-
     virtual void Post(TDropDataTask) = 0;
 
     virtual void Post(TConnectedTask) = 0;
 
-    virtual void Process(TSharedRawMessage aTask, size_t aLength) = 0;
+    virtual void Post(TWaitTask) = 0;
 
-    virtual void Process(std::shared_future<void> aFuture) = 0;
+    virtual void Post(TSendInfoTask) = 0;
+
+    virtual void Process(TSharedRawMessage aTask, size_t aLength) = 0;
 
     virtual void Process(std::chrono::seconds aNewMonday) = 0;
 
     virtual void Process(TConnected aType, TClientId aClientId) = 0;
+
+    virtual void Process(std::shared_future<void> aFuture) = 0;
+
+    virtual void Process(TSharedPromise aPromise) = 0;
 };
 
 struct IData;

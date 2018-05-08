@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <future>
 
 namespace RatingService
 {
@@ -9,6 +10,7 @@ namespace RatingService
 using TByte = uint8_t;
 using TRawMessage = std::unique_ptr<TByte[]>;
 using TSharedRawMessage = std::shared_ptr<TByte>;
+using TSharedPromise = std::shared_ptr<std::promise<void>>;
 
 using TTime = uint64_t;
 using TClientId = uint32_t;
@@ -22,5 +24,12 @@ static const constexpr size_t SendingIntervalsCount = SpecificClientSendingInter
 
 static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
 static const constexpr size_t SomeMondaySec = 1525046400;
+
+constexpr size_t NearestWorkerId(TTime aNowSec, size_t aThreadsCount)
+{
+    auto minStart = aNowSec / SpecificClientSendingIntervalSec * SpecificClientSendingIntervalSec;
+    auto nextSend = aNowSec / SendingIntervalSec * SendingIntervalSec + SendingIntervalSec;
+    return (nextSend - minStart) / SendingIntervalSec % aThreadsCount;
+}
 
 }

@@ -57,18 +57,37 @@ struct Manager : IManager
             aLength});
     }
 
-    void ProcessNotify(size_t aTimerId, size_t aNow) override
+    void ProcessNotify(size_t aTimerId, size_t aNowSec) override
     {
         std::cout << "ProcessNotify: " << aTimerId << std::endl;
 
         if (aTimerId == mTradingPeriodTimerId)
         {
-            assert((aNow - SomeMondaySec) % TradingPeriodSec == 0);
+            assert((aNowSec - SomeMondaySec) % TradingPeriodSec == 0);
             for (auto& w : mWorkers)
             {
-                w->Post(TDropDataTask{w.get(), std::chrono::seconds{aNow}});
+                w->Post(TDropDataTask{w.get(), std::chrono::seconds{aNowSec}});
             }
-            mTradingPeriodStart = aNow;
+            mTradingPeriodStart = aNowSec;
+        }
+        else if (aTimerId == mSendingTimerId)
+        {
+            auto workerId = NearestWorkerId(aNowSec, mWorkers.size());
+
+            auto promise = std::make_shared<std::promise<void>>();
+            std::shared_future<void> future(promise->get_future());
+            for (size_t i = 0; i < mWorkers.size(); ++i)
+            {
+                auto& w = mWorkers[i];
+                if (i != workerId)
+                {
+                    w->Post(TWaitTask{w.get(), future});
+                }
+                else
+                {
+                    w->Post(TSendInfoTask{w.get(), std::move(promise)});
+                }
+            }
         }
     }
 

@@ -25,14 +25,6 @@ constexpr size_t LocalConnectedContainersId(TClientId aClientId, size_t aWorkerI
     return GlobalConnectedContainersId(aClientId) / aWorkerId;
 }
 
-constexpr size_t NearestWorkerId(TTime aNowSec, size_t aThreadsCount)
-{
-    auto minStart = aNowSec / SpecificClientSendingIntervalSec * SpecificClientSendingIntervalSec;
-    auto nextSend = aNowSec / SendingIntervalSec * SendingIntervalSec + SendingIntervalSec;
-    return (nextSend - minStart) / SendingIntervalSec % aThreadsCount;
-}
-
-
 struct Worker : IWorker
 {
     const size_t Id;
@@ -70,6 +62,11 @@ struct Worker : IWorker
     }
 
     void Post(TWaitTask aMessage) override
+    {
+        mAsioService->Post(std::move(aMessage));
+    }
+
+    void Post(TSendInfoTask aMessage) override
     {
         mAsioService->Post(std::move(aMessage));
     }
@@ -167,7 +164,47 @@ struct Worker : IWorker
 
     void Process(std::shared_future<void> aFuture) override
     {
-        (void)aFuture;
+        mManager->Unlock(Id);
+        aFuture.get();
+        mManager->Lock(Id);
+    }
+
+    void Process(TSharedPromise aPromise) override
+    {
+        for (size_t i = 0; i < ThreadsCount; ++i)
+        {
+            if (i != Id)
+            {
+                mManager->Lock(i);
+            }
+        }
+
+        auto dataCopy = mData->Copy();
+
+        for (size_t i = 0; i < ThreadsCount; ++i)
+        {
+            if (i != Id)
+            {
+                mManager->Unlock(i);
+            }
+        }
+
+        aPromise->set_value();
+
+        std::sort(dataCopy.begin(), dataCopy.end(),
+            [](const auto& lh, const auto& rh)
+            {
+                return lh.Total > rh.Total;
+            });
+
+        // TODO: Operate Foreigners.
+
+        for (const auto& e : mForeigners)
+        {
+            auto worker = mManager->GetWorker(e % ThreadsCount);
+            worker->Post(TConnectedTask{worker, TConnected::SendBack, e});
+        }
+        mForeigners.clear();
     }
 
     void Process(std::chrono::seconds aNewMondaySec) override
@@ -178,7 +215,6 @@ struct Worker : IWorker
 
     void Process(TConnected aType, TClientId aClientId) override
     {
-        // TODO: Send this from somewhere.
         if (aType == TConnected::JustConnected)
         {
             mForeigners.push_back(aClientId);

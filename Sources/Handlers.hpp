@@ -94,6 +94,7 @@ using TWorkerTask = Task<IWorker, TArgs...>;
 using TRawMessageTask = TWorkerTask<TRawMessage, size_t>;
 using TSharedRawMessageTask = TWorkerTask<TSharedRawMessage, size_t>;
 using TWaitTask = TWorkerTask<std::shared_future<void>>;
+using TSendInfoTask = TWorkerTask<TSharedPromise>;
 using TDropDataTask = TWorkerTask<std::chrono::seconds>;
 
 enum class TConnected

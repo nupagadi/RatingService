@@ -22,6 +22,8 @@ struct IAsioService
 
     virtual void Post(TWaitTask) = 0;
 
+    virtual void Post(TSendInfoTask) = 0;
+
     virtual void Post(TDropDataTask) = 0;
 
     virtual void Post(TConnectedTask) = 0;

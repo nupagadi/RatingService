@@ -32,6 +32,8 @@ struct AsioServiceMock : IAsioService
 
     MOCK_METHOD1(Post, void(TWaitTask));
 
+    MOCK_METHOD1(Post, void(TSendInfoTask));
+
     MOCK_METHOD1(Post, void(TDropDataTask));
 
     MOCK_METHOD1(Post, void(TConnectedTask));
@@ -101,6 +103,8 @@ struct WorkerMock : IWorker
 
     MOCK_METHOD1(Post, void(TWaitTask));
 
+    MOCK_METHOD1(Post, void(TSendInfoTask));
+
     MOCK_METHOD1(Post, void(TDropDataTask));
 
     MOCK_METHOD1(Post, void(TConnectedTask));
@@ -108,6 +112,8 @@ struct WorkerMock : IWorker
     MOCK_METHOD2(ProcessProxy, void(uint8_t* aTask, size_t aLength));
 
     MOCK_METHOD1(Process, void(std::shared_future<void> aFuture));
+
+    MOCK_METHOD1(Process, void(TSharedPromise aPromise));
 
     MOCK_METHOD1(Process, void(std::chrono::seconds aNewMonday));
 
