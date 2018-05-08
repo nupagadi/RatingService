@@ -30,7 +30,8 @@ struct IData;
 struct IFactory;
 struct IManager;
 
-std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId);
+std::unique_ptr<IWorker> MakeWorker(
+    IFactory* aFactory, IManager* aManager, IData* aData, size_t aId, size_t aThreadsCount);
 
 std::vector<std::unique_ptr<IWorker>> MakeWorkers(
     IFactory* aFactory, IManager* aManager, IData* aData, size_t aThreadsCount);

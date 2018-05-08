@@ -14,12 +14,6 @@ namespace RatingService
 
 struct Manager : IManager
 {
-    // TODO: Move to some config?
-    static const constexpr size_t SendingIntervalSec = 3;
-    static const constexpr size_t SpecificClientSendingIntervalSec = 60;
-    static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
-    static const constexpr size_t SomeMondaySec = 1525046400;
-
     Manager(IFactory* aFactory)
         : mService(aFactory->MakeSharedService(this))
         , mData(aFactory->MakeData())

@@ -10,20 +10,49 @@
 namespace RatingService
 {
 
+constexpr size_t MaxConnectedContainersPerWorker(size_t aThreadsCount)
+{
+    return SendingIntervalsCount / aThreadsCount + 1;
+}
+
+constexpr size_t GlobalConnectedContainersId(TClientId aClientId)
+{
+    return aClientId % SendingIntervalsCount;
+}
+
+constexpr size_t LocalConnectedContainersId(TClientId aClientId, size_t aWorkerId)
+{
+    return GlobalConnectedContainersId(aClientId) / aWorkerId;
+}
+
+constexpr size_t NearestWorkerId(TTime aNowSec, size_t aThreadsCount)
+{
+    auto minStart = aNowSec / SpecificClientSendingIntervalSec * SpecificClientSendingIntervalSec;
+    auto nextSend = aNowSec / SendingIntervalSec * SendingIntervalSec + SendingIntervalSec;
+    return (nextSend - minStart) / SendingIntervalSec % aThreadsCount;
+}
+
+
 struct Worker : IWorker
 {
     const size_t Id;
+    const size_t ThreadsCount;
 
-    Worker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId)
+    Worker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId, size_t aThreadsCount)
         : Id(aId)
+        , ThreadsCount(aThreadsCount)
         , mFactory((assert(aFactory), aFactory))
         , mManager(aManager)
         , mData(aData)
         , mAsioService(aFactory->MakeAsioService())
+        , mConnected(MaxConnectedContainersPerWorker(aThreadsCount))
     {
         assert(mManager);
         assert(mData);
-        mConnected.reserve(100'000);
+        for (auto& e : mConnected)
+        {
+            e.reserve(100'000);
+        }
     }
 
     void Run() override
@@ -103,18 +132,27 @@ struct Worker : IWorker
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mConnected.emplace(RawMessageTools::GetClientId(aTask.get()));
+            ProcessConnected(RawMessageTools::GetClientId(aTask.get()));
             break;
 
         case MessageType::Disconnected:
+        {
             std::cout << "Disconnected" << std::endl;
             if (aLength != RawMessageTools::ConnectedSize)
             {
                 std::cout << "Invalid size:" << aLength << std::endl;
                 break;
             }
-            mConnected.erase(RawMessageTools::GetClientId(aTask.get()));
+
+            auto clientId = RawMessageTools::GetClientId(aTask.get());
+            auto erased = mConnected[LocalConnectedContainersId(clientId, Id)].erase(clientId);
+            if (!erased)
+            {
+                std::cout << "Worker::Process: " << "Disconnected: " << "No such an id: " << clientId << std::endl;
+            }
+
             break;
+        }
 
         default:
             std::cerr << "Unknown message type." << std::endl;
@@ -135,24 +173,47 @@ struct Worker : IWorker
 
 private:
 
+    void ProcessConnected(TClientId aClientId)
+    {
+        auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
+        auto workerId = NearestWorkerId(now, ThreadsCount);
+        if (workerId == Id)
+        {
+            auto emplaced = mConnected[LocalConnectedContainersId(aClientId, Id)].emplace(aClientId);
+            if (!emplaced.second)
+            {
+                std::cout << "Worker::ProcessConnected: " << "Already exists: " << aClientId << std::endl;
+            }
+        }
+        else
+        {
+//            auto worker = mManager->GetWorker(workerId);
+//            worker->Post(TConnectedTask{worker, TConnected::SendInfo, aClientId});
+        }
+    }
+
+private:
+
     IFactory* mFactory;
     IManager* mManager;
     IData* mData;
     std::unique_ptr<IAsioService> mAsioService;
 
-    // TODO: Different connected ctners.
-    std::unordered_set<TClientId> mConnected;
+    std::vector<std::unordered_set<TClientId>> mConnected;
 
     TTime mTradingPeriodStartUs {};
+
+    std::chrono::system_clock mClock;
 };
 
-std::unique_ptr<IWorker> MakeWorker(IFactory* aFactory, IManager* aManager, IData* aData, size_t aId)
+std::unique_ptr<IWorker> MakeWorker(
+    IFactory* aFactory, IManager* aManager, IData* aData, size_t aId, size_t aThreadsCount)
 {
     assert(aFactory);
     assert(aManager);
     assert(aData);
 
-    return std::make_unique<Worker>(aFactory, aManager, aData, aId);
+    return std::make_unique<Worker>(aFactory, aManager, aData, aId, aThreadsCount);
 }
 
 std::vector<std::unique_ptr<IWorker>> MakeWorkers(
@@ -165,7 +226,7 @@ std::vector<std::unique_ptr<IWorker>> MakeWorkers(
     std::vector<std::unique_ptr<IWorker>> result;
     for (size_t i = 0; i < aThreadsCount; ++i)
     {
-        result.push_back(MakeWorker(aFactory, aManager, aData, i));
+        result.push_back(MakeWorker(aFactory, aManager, aData, i, aThreadsCount));
     }
     return result;
 }
