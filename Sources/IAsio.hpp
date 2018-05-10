@@ -38,7 +38,7 @@ struct IAsioSocket
 {
     // Shoudl comply Boost.Asio Read (Write) handler requirements.
     using TReadCallback = Callback<IService, void(const boost::system::error_code&, const size_t&)>;
-    using TWriteCallback = TReadCallback;
+    using TWriteCallback = std::function<void(const boost::system::error_code&, const size_t&)>;
 
     virtual ~IAsioSocket() = default;
 

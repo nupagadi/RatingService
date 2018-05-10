@@ -34,7 +34,6 @@ struct Service : std::enable_shared_from_this<Service>, IService
         , mManager(aManager)
         , mAcceptCallback(&IService::OnAccept)
         , mReadCallback(&IService::OnReceive)
-        , mWriteCallback(&IService::OnSend)
     {
         assert(mFactory);
         assert(mService);
@@ -64,7 +63,6 @@ struct Service : std::enable_shared_from_this<Service>, IService
     {
         mAcceptCallback.SetCallee(shared_from_this());
         mReadCallback.SetCallee(shared_from_this());
-        mWriteCallback.SetCallee(shared_from_this());
 
         Accept();
 
@@ -171,9 +169,16 @@ struct Service : std::enable_shared_from_this<Service>, IService
         return id++;
     }
 
-    void Send(const TByte* aMessage, size_t aLength) override
+    void Send(TSharedRawMessage aMessage, size_t aLength) override
     {
-        mSocket->Send(aMessage, aLength, mWriteCallback);
+        mSocket->Send(
+            aMessage.get(), aLength,
+            [self = shared_from_this(), message = std::move(aMessage)]
+            (const boost::system::error_code &aErrorCode, const size_t& aLength)
+            {
+                self->OnSend(aErrorCode, aLength);
+            }
+        );
     }
 
     IAsioService* GetAsioService() override
@@ -193,9 +198,6 @@ private:
         mSocket->Receive(mBuffer.data(), MaxNetPacketSize, mReadCallback);
     }
 
-    // TODO: Implement?
-    void Send();
-
 private:
 
     // TODO: May be decrease it.
@@ -212,7 +214,6 @@ private:
 
     IAsioAcceptor::TAcceptCallback mAcceptCallback;
     IAsioSocket::TReadCallback mReadCallback;
-    IAsioSocket::TWriteCallback mWriteCallback;
 
     std::array<TByte, MaxNetPacketSize> mBuffer;
     // Will be used rarely.

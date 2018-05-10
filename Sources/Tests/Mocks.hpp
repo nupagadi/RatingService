@@ -106,7 +106,7 @@ struct ServiceMock : IService
 
     MOCK_METHOD0(GetAsioService, IAsioService*());
 
-    MOCK_METHOD2(Send, void(const TByte* aMessage, size_t aLength));
+    MOCK_METHOD2(Send, void(TSharedRawMessage aMessage, size_t aLength));
 };
 
 struct WorkerMock : IWorker

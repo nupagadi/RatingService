@@ -116,7 +116,7 @@ struct Manager : IManager
 
     void Process(TSharedRawMessage aTask, size_t aLength) override
     {
-        mService->Send(aTask.get(), aLength);
+        mService->Send(std::move(aTask), aLength);
     }
 
 private:
