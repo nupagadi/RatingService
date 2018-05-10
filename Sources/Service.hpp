@@ -34,6 +34,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
         , mManager(aManager)
         , mAcceptCallback(&IService::OnAccept)
         , mReadCallback(&IService::OnReceive)
+        , mWriteCallback(&IService::OnSend)
     {
         assert(mFactory);
         assert(mService);
@@ -63,6 +64,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
     {
         mAcceptCallback.SetCallee(shared_from_this());
         mReadCallback.SetCallee(shared_from_this());
+        mWriteCallback.SetCallee(shared_from_this());
 
         Accept();
 
@@ -138,6 +140,18 @@ struct Service : std::enable_shared_from_this<Service>, IService
         }
     }
 
+    void OnSend(const boost::system::error_code &aErrorCode, const size_t& aLength) override
+    {
+        if (aErrorCode)
+        {
+            std::cerr << "Service::OnSend: " << "Sending error: " << aErrorCode << std::endl;
+        }
+        else
+        {
+            std::cout << "Service::OnSend: " << "Sent: " << aLength << std::endl;
+        }
+    }
+
     size_t Notify(size_t aTimePointEpochSec, size_t aRepeatSec) override
     {
         static size_t id = 1;
@@ -157,9 +171,9 @@ struct Service : std::enable_shared_from_this<Service>, IService
         return id++;
     }
 
-    void Send(const TByte* /*aMessage*/, size_t /*aLength*/) override
+    void Send(const TByte* aMessage, size_t aLength) override
     {
-
+        mSocket->Send(aMessage, aLength, mWriteCallback);
     }
 
     IAsioService* GetAsioService() override
@@ -198,6 +212,7 @@ private:
 
     IAsioAcceptor::TAcceptCallback mAcceptCallback;
     IAsioSocket::TReadCallback mReadCallback;
+    IAsioSocket::TWriteCallback mWriteCallback;
 
     std::array<TByte, MaxNetPacketSize> mBuffer;
     // Will be used rarely.

@@ -76,12 +76,14 @@ struct AsioSocket : IAsioSocket
     {
     }
 
-    void Receive(
-        uint8_t* aBuffer,
-        size_t aMaxLength,
-        TReadCallback aCallback) override
+    void Receive(uint8_t* aBuffer, size_t aMaxLength, TReadCallback aCallback) override
     {
         mSocket.async_read_some(boost::asio::buffer(aBuffer, aMaxLength), aCallback);
+    }
+
+    void Send(const TByte* aBuffer, size_t aLength, TWriteCallback aCallback) override
+    {
+        boost::asio::async_write(mSocket, boost::asio::buffer(aBuffer, aLength), aCallback);
     }
 
     void Close()

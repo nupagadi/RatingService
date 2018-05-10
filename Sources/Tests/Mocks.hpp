@@ -50,7 +50,9 @@ struct AsioAcceptorMock : IAsioAcceptor
 
 struct AsioSocketMock : IAsioSocket
 {
-     MOCK_METHOD3(Receive, void(uint8_t* aBuffer, size_t aMaxLength, TReadCallback aCallback));
+     MOCK_METHOD3(Receive, void(TByte* aBuffer, size_t aMaxLength, TReadCallback aCallback));
+
+     MOCK_METHOD3(Send, void(const TByte* aBuffer, size_t aLength, TWriteCallback aCallback));
 
      MOCK_METHOD0(Close, void());
 };
@@ -97,6 +99,8 @@ struct ServiceMock : IService
     MOCK_METHOD1(OnAccept, void(const boost::system::error_code& aErrorCode));
 
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
+
+    MOCK_METHOD2(OnSend, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
 
     MOCK_METHOD2(Notify, size_t(size_t aTimePointEpochSec, size_t aRepeatSec));
 
