@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cmath>
+#include <cstring>
 #include <iostream>
 #include <unordered_set>
 
@@ -215,14 +216,17 @@ private:
             });
 
         auto copyCount = std::min(aData.size(), static_cast<size_t>(RawMessageTools::SendingBlockSize));
-        auto messageSize = RawMessageTools::SendingMessageSize(copyCount);
 
-        auto top = std::make_unique<TByte[]>(messageSize - RawMessageTools::SendingBlockSize * 2);
+        auto top = std::make_unique<TByte[]>(
+            RawMessageTools::SendingMessageSize(copyCount) - RawMessageTools::SendingBlockSize * 2);
 
         RawMessageTools::SetMessageType(top.get(), RawMessageTools::MessageType::Rating);
+
+        auto topSize = 0u;
         for (size_t i = 0; i < copyCount; ++i)
         {
-//            RawMessageTools::Serialize(top.get() + sizeof(TClientId) + sizeof(RawMessageTools::MessageType), aData[i]);
+            topSize += RawMessageTools::Serialize(
+                top.get() + sizeof(TClientId) + sizeof(RawMessageTools::MessageType), aData[i]);
         }
 
         auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
@@ -230,21 +234,59 @@ private:
 
         for (const auto& e : connected)
         {
-            SendRating(e, aData, top.get());
+            SendRating(e, aData, top.get(), topSize);
         }
         for (const auto& e : mForeigners)
         {
-            SendRating(e, aData, top.get());
+            SendRating(e, aData, top.get(), topSize);
         }
     }
 
-    void SendRating(TClientId /*aClientId*/, std::vector<DataEntry>& /*aData*/, const TByte* /*aTop*/)
+    void SendRating(TClientId aClientId, std::vector<DataEntry>& aData, const TByte* aTop, size_t aTopSize)
     {
+        auto copyCount = std::min(aData.size(), static_cast<size_t>(RawMessageTools::SendingBlockSize));
+
         // 1. Allocate.
+        auto message = std::make_unique<TByte[]>(RawMessageTools::SendingMessageSize(copyCount));
+        auto writePtr = message.get();
+
         // 2. Copy the top (pointer).
+        std::memcpy(writePtr, aTop, aTopSize);
+        writePtr += aTopSize;
+
         // 3. Copy the client (ClientId).
         // 3.1 Copy ClientId to the header.
+        RawMessageTools::SetClientId(message.get(), aClientId);
+
+        auto clientId = [](const auto& e)
+        {
+            return RawMessageTools::GetClientId(e.ClientInfo.data());
+        };
+
+        DataEntry entry;
+        RawMessageTools::SetClientId(entry.ClientInfo.data(), aClientId);
+        auto it = std::lower_bound(aData.cbegin(), aData.cend(), entry,
+            [clientId](const auto& lh, const auto& rh){ return clientId(lh) < clientId(rh); });
+        if (clientId(*it) != aClientId)
+        {
+            std::cerr << "Worker::SendRating: " << "Not found: " << aClientId << std::endl;
+            return;
+        }
+
+        auto serialize = [&writePtr](const auto& e)
+        {
+            writePtr += RawMessageTools::Serialize(writePtr, e);
+        };
+
+        serialize(*it);
+
         // 4. Copy plus/minus.
+        size_t prevCount = std::distance(it, aData.cbegin());
+        std::for_each(std::prev(it, std::min(copyCount, prevCount)), it, serialize);
+
+        size_t afterCount = aData.size() - prevCount - 1;
+        std::for_each(it + 1, std::next(it + 1, std::min(copyCount, afterCount)), serialize);
+
         // 5. Send.
     }
 

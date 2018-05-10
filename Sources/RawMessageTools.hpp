@@ -31,16 +31,24 @@ struct RawMessageTools
         return reinterpret_cast<const MessageType*>(aRaw)[offset];
     }
 
-    static constexpr void SetMessageType(TByte* aRaw, MessageType aMessageType)
+    static constexpr size_t SetMessageType(TByte* aRaw, MessageType aMessageType)
     {
         const constexpr int offset = 1;
         reinterpret_cast<MessageType*>(aRaw)[offset] = aMessageType;
+        return sizeof(MessageType);
     }
 
     static constexpr TClientId GetClientId(const TByte* aRaw)
     {
         const constexpr int offset = 0;
         return reinterpret_cast<const TClientId*>(aRaw)[offset];
+    }
+
+    static constexpr size_t SetClientId(TByte* aRaw, TClientId aClientId)
+    {
+        const constexpr int offset = 0;
+        reinterpret_cast<TClientId*>(aRaw)[offset] = aClientId;
+        return sizeof(TClientId);
     }
 
     static constexpr TTime GetTime(const TByte* aRaw)
@@ -59,6 +67,13 @@ struct RawMessageTools
         return amountPtr[0] * power;
     }
 
+    static constexpr size_t SetAmount(TByte* aRaw, double aAmount)
+    {
+        const constexpr int offset = 2;
+        // TODO: Sure, it cannot be this simple. Write double serialization.
+        reinterpret_cast<uint64_t*>(aRaw)[offset] = aAmount;
+        return sizeof(uint64_t);
+    }
 
     static const constexpr size_t SendingBlockSize = 10;
 
@@ -66,8 +81,15 @@ struct RawMessageTools
     {
         return sizeof(TClientId)
             + sizeof(RawMessageTools::MessageType)
-            + aSendingBlockSize * 3 * sizeof(DataEntry)
-            + sizeof(DataEntry);
+            + aSendingBlockSize * 3 * sizeof(RatingService::DataEntry)
+            + sizeof(RatingService::DataEntry);
+    }
+
+    static size_t Serialize(TByte* aDestination, const RatingService::DataEntry& aEntry)
+    {
+        std::memcpy(aDestination, aEntry.ClientInfo.data(), aEntry.InfoSize);
+
+        return aEntry.InfoSize + SetAmount(aDestination, aEntry.Total);
     }
 };
 

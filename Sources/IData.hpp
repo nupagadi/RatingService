@@ -17,6 +17,7 @@ struct DataEntry
     size_t InfoSize;
     std::array<TByte, Size> ClientInfo;
     double Total;
+
 };
 
 static_assert(std::is_trivial<DataEntry>(), "DataEntry should be trivial.");
