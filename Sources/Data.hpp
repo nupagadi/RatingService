@@ -13,11 +13,17 @@ namespace RatingService
 
 struct Data : IData
 {
+    static const constexpr size_t MaxClients = 1'000'000;
+
     Data(size_t aThreadsCount)
         : mThreadsCount(aThreadsCount)
         , mEntries(mThreadsCount)
     {
-        mClientIdToPosition.reserve(1000'000);
+        mClientIdToPosition.reserve(MaxClients);
+        for (auto& e : mEntries)
+        {
+            e.reserve(MaxClients / mThreadsCount);
+        }
     }
 
     void Register(TClientId aClientId, TSharedRawMessage aName, size_t aLength) override
@@ -29,6 +35,7 @@ struct Data : IData
             std::cerr << "Data::Register" << "Already registered: " << aClientId << std::endl;
             return;
         }
+        // Realloc is thread-safe.
         workerEntries.emplace_back();
         workerEntries.back().Total = 0;
 
