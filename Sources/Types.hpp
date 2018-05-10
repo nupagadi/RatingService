@@ -25,11 +25,36 @@ static const constexpr size_t SendingIntervalsCount = SpecificClientSendingInter
 static const constexpr size_t TradingPeriodSec = 7 * 24 * 60 * 60;
 static const constexpr size_t SomeMondaySec = 1525046400;
 
-constexpr size_t NearestWorkerId(TTime aNowSec, size_t aThreadsCount)
+constexpr size_t GlobalConnectedContainerIdByTime(TTime aNowSec)
 {
     auto minStart = aNowSec / SpecificClientSendingIntervalSec * SpecificClientSendingIntervalSec;
     auto nextSend = aNowSec / SendingIntervalSec * SendingIntervalSec + SendingIntervalSec;
-    return (nextSend - minStart) / SendingIntervalSec % aThreadsCount;
+    return (nextSend - minStart) / SendingIntervalSec;
+}
+
+constexpr size_t NearestWorkerId(TTime aNowSec, size_t aThreadsCount)
+{
+    return GlobalConnectedContainerIdByTime(aNowSec) % aThreadsCount;
+}
+
+constexpr size_t LocalConnectedContainerIdByTime(TTime aNowSec, size_t aThreadsCount)
+{
+    return GlobalConnectedContainerIdByTime(aNowSec) / aThreadsCount;
+}
+
+constexpr size_t MaxConnectedContainersPerWorker(size_t aThreadsCount)
+{
+    return SendingIntervalsCount / aThreadsCount + 1;
+}
+
+constexpr size_t GlobalConnectedContainerIdByClient(TClientId aClientId)
+{
+    return aClientId % SendingIntervalsCount;
+}
+
+constexpr size_t LocalConnectedContainerIdByClient(TClientId aClientId, size_t aWorkerId)
+{
+    return GlobalConnectedContainerIdByClient(aClientId) / aWorkerId;
 }
 
 }

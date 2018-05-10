@@ -10,21 +10,6 @@
 namespace RatingService
 {
 
-constexpr size_t MaxConnectedContainersPerWorker(size_t aThreadsCount)
-{
-    return SendingIntervalsCount / aThreadsCount + 1;
-}
-
-constexpr size_t GlobalConnectedContainersId(TClientId aClientId)
-{
-    return aClientId % SendingIntervalsCount;
-}
-
-constexpr size_t LocalConnectedContainersId(TClientId aClientId, size_t aWorkerId)
-{
-    return GlobalConnectedContainersId(aClientId) / aWorkerId;
-}
-
 struct Worker : IWorker
 {
     const size_t Id;
@@ -147,7 +132,7 @@ struct Worker : IWorker
             }
 
             auto clientId = RawMessageTools::GetClientId(aTask.get());
-            auto erased = mConnected[LocalConnectedContainersId(clientId, Id)].erase(clientId);
+            auto erased = mConnected[LocalConnectedContainerIdByClient(clientId, Id)].erase(clientId);
             if (!erased)
             {
                 std::cout << "Worker::Process: " << "Disconnected: " << "No such an id: " << clientId << std::endl;
@@ -191,13 +176,7 @@ struct Worker : IWorker
 
         aPromise->set_value();
 
-        std::sort(dataCopy.begin(), dataCopy.end(),
-            [](const auto& lh, const auto& rh)
-            {
-                return lh.Total > rh.Total;
-            });
-
-        // TODO: Operate Foreigners.
+        SendRating(dataCopy);
 
         for (const auto& e : mForeigners)
         {
@@ -227,6 +206,48 @@ struct Worker : IWorker
 
 private:
 
+    void SendRating(std::vector<DataEntry>& aData)
+    {
+        std::sort(aData.begin(), aData.end(),
+            [](const auto& lh, const auto& rh)
+            {
+                return lh.Total > rh.Total;
+            });
+
+        auto copyCount = std::min(aData.size(), static_cast<size_t>(RawMessageTools::SendingBlockSize));
+        auto messageSize = RawMessageTools::SendingMessageSize(copyCount);
+
+        auto top = std::make_unique<TByte[]>(messageSize - RawMessageTools::SendingBlockSize * 2);
+
+        RawMessageTools::SetMessageType(top.get(), RawMessageTools::MessageType::Rating);
+        for (size_t i = 0; i < copyCount; ++i)
+        {
+//            RawMessageTools::Serialize(top.get() + sizeof(TClientId) + sizeof(RawMessageTools::MessageType), aData[i]);
+        }
+
+        auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
+        auto& connected = mConnected[LocalConnectedContainerIdByTime(now, Id)];
+
+        for (const auto& e : connected)
+        {
+            SendRating(e, aData, top.get());
+        }
+        for (const auto& e : mForeigners)
+        {
+            SendRating(e, aData, top.get());
+        }
+    }
+
+    void SendRating(TClientId /*aClientId*/, std::vector<DataEntry>& /*aData*/, const TByte* /*aTop*/)
+    {
+        // 1. Allocate.
+        // 2. Copy the top (pointer).
+        // 3. Copy the client (ClientId).
+        // 3.1 Copy ClientId to the header.
+        // 4. Copy plus/minus.
+        // 5. Send.
+    }
+
     void ProcessConnected(TClientId aClientId)
     {
         auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
@@ -244,7 +265,7 @@ private:
 
     void PutConnected(TClientId aClientId)
     {
-        auto emplaced = mConnected[LocalConnectedContainersId(aClientId, Id)].emplace(aClientId);
+        auto emplaced = mConnected[LocalConnectedContainerIdByClient(aClientId, Id)].emplace(aClientId);
         if (!emplaced.second)
         {
             std::cout << "Worker::ProcessConnected: " << "Already exists: " << aClientId << std::endl;

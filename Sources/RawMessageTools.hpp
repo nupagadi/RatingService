@@ -31,6 +31,12 @@ struct RawMessageTools
         return reinterpret_cast<const MessageType*>(aRaw)[offset];
     }
 
+    static constexpr void SetMessageType(TByte* aRaw, MessageType aMessageType)
+    {
+        const constexpr int offset = 1;
+        reinterpret_cast<MessageType*>(aRaw)[offset] = aMessageType;
+    }
+
     static constexpr TClientId GetClientId(const TByte* aRaw)
     {
         const constexpr int offset = 0;
@@ -51,6 +57,17 @@ struct RawMessageTools
         auto amountPtr = reinterpret_cast<uint64_t*>(aRaw) + offset;
         auto power = std::pow(10, std::exchange(reinterpret_cast<TByte*>(amountPtr)[powerOffset], 0));
         return amountPtr[0] * power;
+    }
+
+
+    static const constexpr size_t SendingBlockSize = 10;
+
+    static constexpr size_t SendingMessageSize(size_t aSendingBlockSize)
+    {
+        return sizeof(TClientId)
+            + sizeof(RawMessageTools::MessageType)
+            + aSendingBlockSize * 3 * sizeof(DataEntry)
+            + sizeof(DataEntry);
     }
 };
 
