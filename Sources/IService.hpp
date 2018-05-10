@@ -28,6 +28,8 @@ struct IService
 
     virtual size_t Notify(size_t aTimePointEpochSec, size_t aRepeatSec) = 0;
 
+    virtual void Send(const TByte* aMessage, size_t aLength) = 0;
+
     virtual IAsioService* GetAsioService() = 0;
 };
 

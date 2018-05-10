@@ -157,6 +157,11 @@ struct Service : std::enable_shared_from_this<Service>, IService
         return id++;
     }
 
+    void Send(const TByte* /*aMessage*/, size_t /*aLength*/) override
+    {
+
+    }
+
     IAsioService* GetAsioService() override
     {
         return mService.get();

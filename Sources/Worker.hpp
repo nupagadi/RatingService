@@ -290,7 +290,6 @@ private:
 
         // 5. Send.
         mManager->Post(TManagerSharedRawMessageTask{mManager, message, writePtr - message.get()});
-
     }
 
     void ProcessConnected(TClientId aClientId)

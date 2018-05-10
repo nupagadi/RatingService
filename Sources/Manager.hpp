@@ -114,33 +114,12 @@ struct Manager : IManager
         mService->GetAsioService()->Post(std::move(aMessage));
     }
 
-    void Process(TSharedRawMessage /*aTask*/, size_t /*aLength*/) override
+    void Process(TSharedRawMessage aTask, size_t aLength) override
     {
-
+        mService->Send(aTask.get(), aLength);
     }
 
 private:
-
-//    void DropData()
-//    {
-//        std::promise<void> promise;
-//        std::shared_future<void> future(promise.get_future());
-
-//        for (auto& w : mWorkers)
-//        {
-//            w->Post(TWaitTask{w.get(), future});
-//        }
-
-//        for (auto& m : mMutexes)
-//        {
-//            m.lock();
-//        }
-
-//        for (auto& w : mWorkers)
-//        {
-//            mData->Drop(w.Id);
-//        }
-//    }
 
     void SetupTimers()
     {
