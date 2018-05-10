@@ -109,6 +109,16 @@ struct Manager : IManager
         return mWorkers[aWorkerId].get();
     }
 
+    void Post(TManagerSharedRawMessageTask aMessage) override
+    {
+        mService->GetAsioService()->Post(std::move(aMessage));
+    }
+
+    void Process(TSharedRawMessage /*aTask*/, size_t /*aLength*/) override
+    {
+
+    }
+
 private:
 
 //    void DropData()

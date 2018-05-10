@@ -157,6 +157,11 @@ struct Service : std::enable_shared_from_this<Service>, IService
         return id++;
     }
 
+    IAsioService* GetAsioService() override
+    {
+        return mService.get();
+    }
+
 private:
 
     void Accept()

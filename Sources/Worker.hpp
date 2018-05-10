@@ -247,7 +247,8 @@ private:
         auto copyCount = std::min(aData.size(), static_cast<size_t>(RawMessageTools::SendingBlockSize));
 
         // 1. Allocate.
-        auto message = std::make_unique<TByte[]>(RawMessageTools::SendingMessageSize(copyCount));
+        auto tempPtr = std::make_unique<TByte>(RawMessageTools::SendingMessageSize(copyCount));
+        auto message = std::shared_ptr<TByte>(tempPtr.release(), std::default_delete<TByte[]>());
         auto writePtr = message.get();
 
         // 2. Copy the top (pointer).
@@ -288,6 +289,8 @@ private:
         std::for_each(it + 1, std::next(it + 1, std::min(copyCount, afterCount)), serialize);
 
         // 5. Send.
+        mManager->Post(TManagerSharedRawMessageTask{mManager, message, writePtr - message.get()});
+
     }
 
     void ProcessConnected(TClientId aClientId)

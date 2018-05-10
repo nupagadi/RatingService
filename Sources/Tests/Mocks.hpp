@@ -30,6 +30,8 @@ struct AsioServiceMock : IAsioService
 
     MOCK_METHOD1(Post, void(TSharedRawMessageTask));
 
+    MOCK_METHOD1(Post, void(TManagerSharedRawMessageTask));
+
     MOCK_METHOD1(Post, void(TWaitTask));
 
     MOCK_METHOD1(Post, void(TSendInfoTask));
@@ -80,6 +82,10 @@ struct ManagerMock : IManager
     MOCK_METHOD1(Unlock, void(size_t aId));
 
     MOCK_METHOD1(GetWorker, IWorker*(size_t aWorkerId));
+
+    MOCK_METHOD1(Post, void(TManagerSharedRawMessageTask));
+
+    MOCK_METHOD2(Process, void(TSharedRawMessage aTask, size_t aLength));
 };
 
 struct ServiceMock : IService
@@ -93,6 +99,8 @@ struct ServiceMock : IService
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
 
     MOCK_METHOD2(Notify, size_t(size_t aTimePointEpochSec, size_t aRepeatSec));
+
+    MOCK_METHOD0(GetAsioService, IAsioService*());
 };
 
 struct WorkerMock : IWorker

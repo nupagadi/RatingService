@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "Handlers.hpp"
+
 namespace RatingService
 {
 
@@ -23,6 +25,10 @@ struct IManager
     virtual void Unlock(size_t aId) = 0;
 
     virtual IWorker* GetWorker(size_t aWorkerId) = 0;
+
+    virtual void Post(TManagerSharedRawMessageTask) = 0;
+
+    virtual void Process(TSharedRawMessage aTask, size_t aLength) = 0;
 };
 
 struct IFactory;

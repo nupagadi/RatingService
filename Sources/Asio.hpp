@@ -3,6 +3,7 @@
 #include <boost/asio/system_timer.hpp>
 
 #include "IWorker.hpp"
+#include "IManager.hpp"
 #include "IAsio.hpp"
 
 namespace RatingService
@@ -21,6 +22,11 @@ struct AsioService : IAsioService
     }
 
     void Post(TSharedRawMessageTask aMessage) override
+    {
+        mIoService.post(std::move(aMessage));
+    }
+
+    void Post(TManagerSharedRawMessageTask aMessage) override
     {
         mIoService.post(std::move(aMessage));
     }

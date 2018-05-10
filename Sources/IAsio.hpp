@@ -20,6 +20,8 @@ struct IAsioService
 
     virtual void Post(TSharedRawMessageTask) = 0;
 
+    virtual void Post(TManagerSharedRawMessageTask) = 0;
+
     virtual void Post(TWaitTask) = 0;
 
     virtual void Post(TSendInfoTask) = 0;

@@ -87,6 +87,7 @@ private:
 };
 
 struct IWorker;
+struct IManager;
 
 template <typename ...TArgs>
 using TWorkerTask = Task<IWorker, TArgs...>;
@@ -96,6 +97,7 @@ using TSharedRawMessageTask = TWorkerTask<TSharedRawMessage, size_t>;
 using TWaitTask = TWorkerTask<std::shared_future<void>>;
 using TSendInfoTask = TWorkerTask<TSharedPromise>;
 using TDropDataTask = TWorkerTask<std::chrono::seconds>;
+using TManagerSharedRawMessageTask = Task<IManager, TSharedRawMessage, size_t>;
 
 enum class TConnected
 {
