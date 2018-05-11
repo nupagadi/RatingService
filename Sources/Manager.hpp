@@ -38,6 +38,16 @@ struct Manager : IManager
         {
             e.join();
         }
+
+        std::cout << "Everything is stopped." << std::endl;
+    }
+
+    void Stop(bool aForce) override
+    {
+        for (auto& e : mWorkers)
+        {
+            e->Stop(aForce);
+        }
     }
 
     void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) override

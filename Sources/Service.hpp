@@ -41,22 +41,6 @@ struct Service : std::enable_shared_from_this<Service>, IService
         mTimers.reserve(2);
     }
 
-    void OnTimer(const boost::system::error_code& aErrorCode, size_t aPeriod, size_t aId, IAsioTimer& aTimer)
-    {
-        if (aErrorCode)
-        {
-            std::cout << "Service::OnTimer: " << aErrorCode << std::endl;
-            return;
-        }
-
-        auto now = aTimer.ExpiresAt();
-        aTimer.ExpiresAt(now + std::chrono::seconds(aPeriod));
-        aTimer.Wait(
-            std::bind(&Service::OnTimer, shared_from_this(), std::placeholders::_1, aPeriod, aId, std::ref(aTimer)));
-
-        mManager->ProcessNotify(aId, std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count());
-    }
-
     void Run() override
     {
         mAcceptCallback.SetCallee(shared_from_this());
@@ -75,9 +59,20 @@ struct Service : std::enable_shared_from_this<Service>, IService
         mService->Run();
     }
 
-    // TODO: Implement?
     void Stop(bool aForce) override
     {
+        mStopping = true;
+        mManager->Stop(false);
+
+        for (auto& e : mTimers)
+        {
+            e->Cancel();
+        }
+
+        mAcceptor->Cancel();
+
+        mSocket->Close();
+
         mService->Stop(aForce);
     }
 
@@ -86,11 +81,36 @@ struct Service : std::enable_shared_from_this<Service>, IService
         if (!aErrorCode)
         {
             std::cout << "Service::OnSignal: " << "Signal: " << aSignalNumber << std::endl;
+            std::cout << "Graceful shutdown..." << std::endl;
+            Stop(false);
         }
         else
         {
             std::cerr << "Service::OnSignal: " << aErrorCode << std::endl;
         }
+    }
+
+    void OnTimer(const boost::system::error_code& aErrorCode, size_t aPeriod, size_t aId, IAsioTimer& aTimer)
+    {
+        if (aErrorCode)
+        {
+            if (!mStopping)
+            {
+                std::cerr << "Service::OnTimer: " << aErrorCode << std::endl;
+            }
+            else
+            {
+                std::cout << "Service::OnTimer: " << "Timer #" << aId << " was stopped." << std::endl;
+            }
+            return;
+        }
+
+        auto now = aTimer.ExpiresAt();
+        aTimer.ExpiresAt(now + std::chrono::seconds(aPeriod));
+        aTimer.Wait(
+            std::bind(&Service::OnTimer, shared_from_this(), std::placeholders::_1, aPeriod, aId, std::ref(aTimer)));
+
+        mManager->ProcessNotify(aId, std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count());
     }
 
     void OnAccept(const boost::system::error_code& aErrorCode) override
@@ -220,6 +240,8 @@ private:
 
     // TODO: May be decrease it.
     static const constexpr size_t MaxNetPacketSize = 1024;
+
+    bool mStopping = false;
 
     IFactory* mFactory;
 

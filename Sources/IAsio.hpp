@@ -15,7 +15,6 @@ struct IAsioService
 {
     virtual ~IAsioService() = default;
 
-    // TODO: Use Poll instead.
     virtual void Run() = 0;
 
     virtual void Post(TSharedRawMessageTask) = 0;
@@ -36,7 +35,7 @@ struct IAsioService
 
 struct IAsioSocket
 {
-    // Shoudl comply Boost.Asio Read (Write) handler requirements.
+    // Should comply Boost.Asio Read (Write) handler requirements.
     using TReadCallback = Callback<IService, void(const boost::system::error_code&, const size_t&)>;
     using TWriteCallback = std::function<void(const boost::system::error_code&, const size_t&)>;
 
@@ -58,6 +57,8 @@ struct IAsioAcceptor
     virtual ~IAsioAcceptor() = default;
 
     virtual void Accept(IAsioSocket* aSocket, TAcceptCallback aCallback) = 0;
+
+    virtual void Cancel() = 0;
 };
 
 struct IAsioTimer
@@ -69,6 +70,8 @@ struct IAsioTimer
     virtual void ExpiresAt(const std::chrono::system_clock::time_point& aTimePoint) = 0;
 
     virtual void Wait(const std::function<void(const boost::system::error_code&)>& aCallback) = 0;
+
+    virtual void Cancel() = 0;
 };
 
 struct IAsioSignals

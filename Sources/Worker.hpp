@@ -40,6 +40,13 @@ struct Worker : IWorker
         mAsioService->Run();
 
         mManager->Unlock(Id);
+
+        std::cout << "Worker #" << Id << " was stopped." << std::endl;
+    }
+
+    void Stop(bool aForce) override
+    {
+        mAsioService->Stop(aForce);
     }
 
     void Post(TSharedRawMessageTask aMessage) override

@@ -13,8 +13,9 @@ struct IManager
 {
     virtual ~IManager() = default;
 
-    // TODO: Inherit from IWorker?
     virtual void Run() = 0;
+
+    virtual void Stop(bool aForce) = 0;
 
     virtual void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) = 0;
 

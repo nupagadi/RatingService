@@ -46,6 +46,8 @@ struct AsioServiceMock : IAsioService
 struct AsioAcceptorMock : IAsioAcceptor
 {
     MOCK_METHOD2(Accept, void(IAsioSocket* aSocket, TAcceptCallback aCallback));
+
+    MOCK_METHOD0(Cancel, void());
 };
 
 struct AsioSocketMock : IAsioSocket
@@ -64,6 +66,8 @@ struct AsioTimerMock : IAsioTimer
     MOCK_METHOD1(ExpiresAt, void(const std::chrono::system_clock::time_point& aTimePoint));
 
     MOCK_METHOD1(Wait, void(const std::function<void(const boost::system::error_code&)>& aCallback));
+
+    MOCK_METHOD0(Cancel, void());
 };
 
 struct AsioSignalsMock : IAsioSignals
@@ -75,6 +79,8 @@ struct AsioSignalsMock : IAsioSignals
 struct ManagerMock : IManager
 {
     MOCK_METHOD0(Run, void());
+
+    MOCK_METHOD1(Stop, void(bool aForce));
 
     void ProcessMessageFromNet(std::unique_ptr<uint8_t[]> aMessage, size_t aLength) override
     {
@@ -120,6 +126,8 @@ struct ServiceMock : IService
 struct WorkerMock : IWorker
 {
     MOCK_METHOD0(Run, void());
+
+    MOCK_METHOD1(Stop, void(bool aForce));
 
     MOCK_METHOD1(PostProxy, void(TSharedRawMessageTask*));
 

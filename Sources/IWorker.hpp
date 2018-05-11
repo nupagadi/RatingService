@@ -13,6 +13,8 @@ struct IWorker
 
     virtual void Run() = 0;
 
+    virtual void Stop(bool aForce) = 0;
+
     virtual void Post(TSharedRawMessageTask) = 0;
 
     virtual void Post(TDropDataTask) = 0;

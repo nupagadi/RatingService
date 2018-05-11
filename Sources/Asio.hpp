@@ -116,6 +116,11 @@ struct AsioAcceptor : IAsioAcceptor
         mAcceptor.async_accept(concreteSocket->mSocket, aCallback);
     }
 
+    void Cancel() override
+    {
+        mAcceptor.cancel();
+    }
+
 private:
 
     boost::asio::ip::tcp::acceptor mAcceptor;
@@ -141,6 +146,11 @@ struct AsioTimer : IAsioTimer
     void Wait(const std::function<void(const boost::system::error_code&)>& aCallback) override
     {
         mTimer.async_wait(aCallback);
+    }
+
+    void Cancel() override
+    {
+        mTimer.cancel();
     }
 
 private:
