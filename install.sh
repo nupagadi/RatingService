@@ -1,6 +1,6 @@
 if [ $# -ne 3 ]
   then
-    echo "./install.sh <path/to/build> <port> <threads count>"
+    echo "./install.sh <path/to/build> <port> <threads-count>"
     exit 1
 fi
 
