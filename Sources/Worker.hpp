@@ -230,7 +230,7 @@ private:
         }
 
         auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
-        auto& connected = mConnected[LocalConnectedContainerIdByTime(now, Id)];
+        auto& connected = mConnected[LocalConnectedContainerIdByTime(now, ThreadsCount)];
 
         for (const auto& e : connected)
         {
