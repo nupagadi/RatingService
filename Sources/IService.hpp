@@ -28,6 +28,8 @@ struct IService
 
     virtual void OnSend(const boost::system::error_code& aErrorCode, const size_t& aLength) = 0;
 
+    virtual void OnSignal(const boost::system::error_code& aErrorCode, const int& aSignalNumber) = 0;
+
     virtual size_t Notify(size_t aTimePointEpochSec, size_t aRepeatSec) = 0;
 
     virtual void Send(TSharedRawMessage aMessage, size_t aLength) = 0;

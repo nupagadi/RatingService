@@ -71,6 +71,14 @@ struct IAsioTimer
     virtual void Wait(const std::function<void(const boost::system::error_code&)>& aCallback) = 0;
 };
 
+struct IAsioSignals
+{
+    virtual ~IAsioSignals() = default;
+
+    virtual void Wait(
+        const std::function<void(const boost::system::error_code&, const int& aSignalNumber)>& aCallback) = 0;
+};
+
 std::unique_ptr<IAsioService> MakeAsioService();
 
 std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService);
@@ -78,5 +86,7 @@ std::unique_ptr<IAsioSocket> MakeAsioSocket(IAsioService* aAsioService);
 std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, short aPort);
 
 std::unique_ptr<IAsioTimer> MakeAsioTimer(IAsioService* aAsioService);
+
+std::unique_ptr<IAsioSignals> MakeAsioSignals(IAsioService* aAsioService);
 
 }

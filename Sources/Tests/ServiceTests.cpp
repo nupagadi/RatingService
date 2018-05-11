@@ -17,6 +17,7 @@ struct ServiceTests : ::testing::Test
     AsioServiceMock* AsioService;
     AsioSocketMock* AsioSocket;
     AsioAcceptorMock* AsioAcceptor;
+    AsioSignalsMock* AsioSignals;
     std::unique_ptr<ManagerMock> Manager;
 
     void SetUp() override
@@ -25,15 +26,22 @@ struct ServiceTests : ::testing::Test
         auto asioService = Factory.MakeMock<StrictMock<AsioServiceMock>>();
         auto asioSocket = Factory.MakeMock<StrictMock<AsioSocketMock>>();
         auto asioAcceptor = Factory.MakeMock<StrictMock<AsioAcceptorMock>>();
+        auto asioSignals = Factory.MakeMock<StrictMock<AsioSignalsMock>>();
 
         AsioService = asioService.get();
         AsioSocket = asioSocket.get();
         AsioAcceptor = asioAcceptor.get();
+        AsioSignals = asioSignals.get();
         Manager = Factory.MakeMock<StrictMock<ManagerMock>>();
 
         // Try Factory method.
         Service = std::make_shared<RatingService::Service>(
-            &Factory, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), Manager.get());
+            &Factory,
+            std::move(asioService),
+            std::move(asioAcceptor),
+            std::move(asioSocket),
+            std::move(asioSignals),
+            Manager.get());
     }
 
     void TearDown() override

@@ -14,6 +14,7 @@ struct AsioService : IAsioService
     friend class AsioTimer;
     friend class AsioSocket;
     friend class AsioAcceptor;
+    friend class AsioSignals;
 
     void Run() override
     {
@@ -147,6 +148,24 @@ private:
     boost::asio::system_timer mTimer;
 };
 
+struct AsioSignals : IAsioSignals
+{
+    AsioSignals(AsioService* aService)
+        : mSignals((assert(aService), aService->mIoService), SIGINT, SIGTERM)
+    {
+    }
+
+    void Wait(
+        const std::function<void(const boost::system::error_code&, const int& aSignalNumber)>& aCallback) override
+    {
+        mSignals.async_wait(aCallback);
+    }
+
+private:
+
+    boost::asio::signal_set mSignals;
+};
+
 std::unique_ptr<IAsioService> MakeAsioService()
 {
     return std::make_unique<AsioService>();
@@ -169,6 +188,11 @@ std::unique_ptr<IAsioAcceptor> MakeAsioAcceptor(IAsioService* aAsioService, shor
     // 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::system::system_error> >'
     // what():  bind: Address already in use
     return std::make_unique<AsioAcceptor>(dynamic_cast<AsioService*>(aAsioService), aPort);
+}
+
+std::unique_ptr<IAsioSignals> MakeAsioSignals(IAsioService* aAsioService)
+{
+    return std::make_unique<AsioSignals>(dynamic_cast<AsioService*>(aAsioService));
 }
 
 }

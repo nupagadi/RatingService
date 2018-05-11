@@ -66,6 +66,12 @@ struct AsioTimerMock : IAsioTimer
     MOCK_METHOD1(Wait, void(const std::function<void(const boost::system::error_code&)>& aCallback));
 };
 
+struct AsioSignalsMock : IAsioSignals
+{
+    MOCK_METHOD1(
+        Wait, void(const std::function<void(const boost::system::error_code&, const int& aSignalNumber)>& aCallback));
+};
+
 struct ManagerMock : IManager
 {
     MOCK_METHOD0(Run, void());
@@ -101,6 +107,8 @@ struct ServiceMock : IService
     MOCK_METHOD2(OnReceive, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
 
     MOCK_METHOD2(OnSend, void(const boost::system::error_code& aErrorCode, const size_t& aLength));
+
+    MOCK_METHOD2(OnSignal, void(const boost::system::error_code& aErrorCode, const int& aSignalNumber));
 
     MOCK_METHOD2(Notify, size_t(size_t aTimePointEpochSec, size_t aRepeatSec));
 

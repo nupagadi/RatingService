@@ -10,14 +10,9 @@
 #include "IAsio.hpp"
 #include "IFactory.hpp"
 
-// TODO: Remove.
-#include <boost/asio/system_timer.hpp>
-#include <chrono>
-#include <thread>
 
 namespace RatingService
 {
-
 
 struct Service : std::enable_shared_from_this<Service>, IService
 {
@@ -26,11 +21,13 @@ struct Service : std::enable_shared_from_this<Service>, IService
         std::unique_ptr<IAsioService>&& aService,
         std::unique_ptr<IAsioAcceptor>&& aAcceptor,
         std::unique_ptr<IAsioSocket>&& aSocket,
+        std::unique_ptr<IAsioSignals>&& aSignals,
         IManager* aManager)
         : mFactory(aFactory)
         , mService(std::move(aService))
         , mAcceptor(std::move(aAcceptor))
         , mSocket(std::move(aSocket))
+        , mSignals(std::move(aSignals))
         , mManager(aManager)
         , mAcceptCallback(&IService::OnAccept)
         , mReadCallback(&IService::OnReceive)
@@ -39,6 +36,7 @@ struct Service : std::enable_shared_from_this<Service>, IService
         assert(mService);
         assert(mAcceptor);
         assert(mSocket);
+        assert(mSignals);
         assert(mManager);
         mTimers.reserve(2);
     }
@@ -64,6 +62,14 @@ struct Service : std::enable_shared_from_this<Service>, IService
         mAcceptCallback.SetCallee(shared_from_this());
         mReadCallback.SetCallee(shared_from_this());
 
+        mSignals->Wait(
+            [self = shared_from_this()]
+            (const boost::system::error_code& aErrorCode, const int& aSignalNumber)
+            {
+                self->OnSignal(aErrorCode, aSignalNumber);
+            }
+        );
+
         Accept();
 
         mService->Run();
@@ -73,6 +79,18 @@ struct Service : std::enable_shared_from_this<Service>, IService
     void Stop(bool aForce) override
     {
         mService->Stop(aForce);
+    }
+
+    void OnSignal(const boost::system::error_code& aErrorCode, const int& aSignalNumber) override
+    {
+        if (!aErrorCode)
+        {
+            std::cout << "Service::OnSignal: " << "Signal: " << aSignalNumber << std::endl;
+        }
+        else
+        {
+            std::cerr << "Service::OnSignal: " << aErrorCode << std::endl;
+        }
     }
 
     void OnAccept(const boost::system::error_code& aErrorCode) override
@@ -208,6 +226,7 @@ private:
     std::unique_ptr<IAsioService> mService;
     std::unique_ptr<IAsioAcceptor> mAcceptor;
     std::unique_ptr<IAsioSocket> mSocket;
+    std::unique_ptr<IAsioSignals> mSignals;
     std::vector<std::unique_ptr<IAsioTimer>> mTimers;
 
     IManager* mManager;
@@ -225,9 +244,15 @@ std::shared_ptr<IService> MakeSharedService(IFactory* aFactory, IManager* aManag
     auto asioService = MakeAsioService();
     auto asioSocket = MakeAsioSocket(asioService.get());
     auto asioAcceptor = MakeAsioAcceptor(asioService.get(), aAcceptorPort);
+    auto asioSignals = MakeAsioSignals(asioService.get());
 
     return std::make_shared<Service>(
-        aFactory, std::move(asioService), std::move(asioAcceptor), std::move(asioSocket), aManager);
+        aFactory,
+        std::move(asioService),
+        std::move(asioAcceptor),
+        std::move(asioSocket),
+        std::move(asioSignals),
+        aManager);
 }
 
 }
