@@ -157,6 +157,8 @@ struct Worker : IWorker
 
     void Process(std::shared_future<void> aFuture) override
     {
+        std::cout << "Worker #" << Id << " yields" << std::endl;
+
         mManager->Unlock(Id);
         aFuture.get();
         mManager->Lock(Id);
@@ -164,6 +166,8 @@ struct Worker : IWorker
 
     void Process(TSharedPromise aPromise) override
     {
+        std::cout << "Worker #" << Id << " starts send" << std::endl;
+
         for (size_t i = 0; i < ThreadsCount; ++i)
         {
             if (i != Id)
@@ -202,6 +206,8 @@ struct Worker : IWorker
 
     void Process(TConnected aType, TClientId aClientId) override
     {
+        std::cout << "Worker::Process: " << "TConnected: " << (int)aType << " ClientId: " << aClientId << std::endl;
+
         if (aType == TConnected::JustConnected)
         {
             mForeigners.push_back(aClientId);
@@ -273,8 +279,8 @@ private:
 
         DataEntry entry;
         RawMessageTools::SetClientId(entry.ClientInfo.data(), aClientId);
-        auto it = std::lower_bound(aData.cbegin(), aData.cend(), entry,
-            [clientId](const auto& lh, const auto& rh){ return clientId(lh) < clientId(rh); });
+        auto it = std::find_if(aData.cbegin(), aData.cend(),
+            [clientId, aClientId](const auto& e){ return clientId(e) == aClientId; });
         if (clientId(*it) != aClientId)
         {
             std::cerr << "Worker::SendRating: " << "Not found: " << aClientId << std::endl;
@@ -289,20 +295,24 @@ private:
         serialize(*it);
 
         // 4. Copy plus/minus.
-        size_t prevCount = std::distance(it, aData.cbegin());
+        size_t prevCount = std::distance(aData.cbegin(), it);
         std::for_each(std::prev(it, std::min(copyCount, prevCount)), it, serialize);
 
         size_t afterCount = aData.size() - prevCount - 1;
         std::for_each(it + 1, std::next(it + 1, std::min(copyCount, afterCount)), serialize);
 
         // 5. Send.
-        mManager->Post(TManagerSharedRawMessageTask{mManager, message, writePtr - message.get()});
+        mManager->Post(TManagerSharedRawMessageTask{mManager, std::move(message), writePtr - message.get()});
     }
 
     void ProcessConnected(TClientId aClientId)
     {
         auto now = std::chrono::duration_cast<std::chrono::seconds>(mClock.now().time_since_epoch()).count();
         auto workerId = NearestWorkerId(now, ThreadsCount);
+
+        std::cout << "This Worker Id: " << Id << std::endl;
+        std::cout << "Nearest Worker Id: " << workerId << std::endl;
+
         if (workerId == Id)
         {
             PutConnected(aClientId);
