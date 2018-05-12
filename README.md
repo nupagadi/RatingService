@@ -140,19 +140,19 @@ entry:
 - Google Mock
 
 ## Запуск
-1. mkdir <build-dir>
-2. cd <build-dir>
-3. cmake <source-dir>
+1. mkdir \<build-dir>
+2. cd \<build-dir>
+3. cmake \<source-dir>
 4. make
-5. cd <source-dir>
+5. cd \<source-dir>
 6. chmod +x install.sh
 7. chmod +x uninstall.sh
-8. ./install.sh <build-dir> <port> <threads-count>
+8. ./install.sh \<build-dir> \<port> \<threads-count>
 9. sudo systemctl <start|restart|stop|status> RatingService
 
 ./uninstall.sh
 
-Можно запускать как stand-alone.
+Можно запускать stand-alone.
 
 ## TODO
 - Закончить написание тестов. Сейчас почти все fixture и mock готовы. 
