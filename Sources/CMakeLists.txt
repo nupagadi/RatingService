@@ -1,30 +1,33 @@
 cmake_minimum_required(VERSION 2.8)
 
 set(INCLUDES
-    Asio.hpp
-    Data.hpp
-    Factory.hpp
-    Handlers.hpp
-    IAsio.hpp
-    IData.hpp
-    IFactory.hpp
-    IManager.hpp
-    IService.hpp
-    IWorker.hpp
-    Manager.hpp
-    RawMessageTools.hpp
-    Service.hpp
-    Types.hpp
-    Worker.hpp
+    Header/Asio.hpp
+    Header/Data.hpp
+    Header/Factory.hpp
+    Header/Handlers.hpp
+    Interface/IAsio.hpp
+    Interface/IData.hpp
+    Interface/IFactory.hpp
+    Interface/IManager.hpp
+    Interface/IService.hpp
+    Interface/IWorker.hpp
+    Header/Manager.hpp
+    Header/RawMessageTools.hpp
+    Header/Service.hpp
+    Header/Types.hpp
+    Header/Worker.hpp
 )
 set(SOURCES
-    Asio.cpp
-    Data.cpp
-    Factory.cpp
-    Manager.cpp
-    Service.cpp
-    Worker.cpp
+    Source/Asio.cpp
+    Source/Data.cpp
+    Source/Factory.cpp
+    Source/Manager.cpp
+    Source/Service.cpp
+    Source/Worker.cpp
 )
+
+include_directories(Interface)
+include_directories(Header)
 
 find_package(Threads REQUIRED)
 find_package(Boost 1.58.0 COMPONENTS REQUIRED system)

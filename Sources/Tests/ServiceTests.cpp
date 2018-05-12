@@ -1,7 +1,8 @@
 #include <cstring>
 
 #include "Mocks.hpp"
-#include "../Service.hpp"
+#include "Header/Service.hpp"
+
 
 namespace RatingService
 {

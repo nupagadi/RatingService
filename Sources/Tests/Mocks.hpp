@@ -3,11 +3,8 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "../IFactory.hpp"
-#include "../IAsio.hpp"
-#include "../IManager.hpp"
-#include "../IService.hpp"
-#include "../IWorker.hpp"
+#include "Interface/IFactory.hpp"
+
 
 namespace RatingService
 {
