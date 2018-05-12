@@ -1,11 +1,6 @@
-
-// TODO: Remove.
 #include <iostream>
 
 #include "IFactory.hpp"
-#include "IService.hpp"
-
-// TODO: Create directories.
 
 int main(int argc, char** argv)
 {

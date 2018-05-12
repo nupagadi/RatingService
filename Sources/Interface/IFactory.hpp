@@ -11,7 +11,6 @@
 namespace RatingService
 {
 
-// TODO: All const?
 struct IFactory
 {
     virtual ~IFactory() = default;

@@ -29,7 +29,6 @@ struct IAsioService
 
     virtual void Post(TConnectedTask) = 0;
 
-    // TODO: Ok?
     virtual void Stop(bool aForce) = 0;
 };
 
@@ -48,7 +47,6 @@ struct IAsioSocket
     virtual void Close() = 0;
 };
 
-// TODO: Template for IService.
 struct IAsioAcceptor
 {
     // Should comply Boost.Asio Accept handler requirements.

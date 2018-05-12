@@ -16,10 +16,8 @@ struct IService
 {
     virtual ~IService() = default;
 
-    // TODO: Use Poll instead.
     virtual void Run() = 0;
 
-    // TODO: Ok?
     virtual void Stop(bool aForce) = 0;
 
     virtual void OnAccept(const boost::system::error_code& aErrorCode) = 0;

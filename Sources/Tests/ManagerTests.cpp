@@ -37,7 +37,6 @@ public:
     }
 };
 
-// TODO: ShouldPollService.
 TEST_F(ManagerTests, ShouldRunAllOnRun)
 {
     // TODO: Can't expect from another thread now. Will try this:

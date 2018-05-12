@@ -54,7 +54,6 @@ struct ServiceTests : ::testing::Test
     }
 };
 
-// TODO: Use Poll instead.
 TEST_F(ServiceTests, ShouldAcceptOnRun)
 {
     IAsioAcceptor::TAcceptCallback callback{Service, &IService::OnAccept};
